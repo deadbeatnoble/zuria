@@ -50,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
                     if (admin_code.getText().toString().equals("6994")) {
                         //admin pages
                         //code goes here
-                        Intent intent = new Intent(MainActivity.this, adminPrimaryPage.class);
+                        Intent intent = new Intent(MainActivity.this, shopOwnerPOV.class);
                         startActivity(intent);
                     } else {
                         //code goes here
