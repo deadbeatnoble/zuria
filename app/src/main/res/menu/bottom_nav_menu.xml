@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:title="Store"
+        android:icon="@drawable/store"
+        android:id="@+id/store_bottom_nav"/>
+    <item android:title="Orders"
+        android:icon="@drawable/orders"
+        android:id="@+id/order_bottom_nav"/>
+    <item android:title="Review"
+        android:icon="@drawable/review"
+        android:id="@+id/review_bottom_nav"/>
+</menu>
