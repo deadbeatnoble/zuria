@@ -4,9 +4,20 @@ public class ProductModel {
     private String productName;
     private double productPrice;
 
+    private Boolean expanded;
+
+    public Boolean isExpanded() {
+        return expanded;
+    }
+
+    public void setExpanded(Boolean expanded) {
+        this.expanded = expanded;
+    }
+
     public ProductModel(String productName, double productPrice) {
         this.productName = productName;
         this.productPrice = productPrice;
+        this.expanded = false;
     }
 
     public String getProductName() {
