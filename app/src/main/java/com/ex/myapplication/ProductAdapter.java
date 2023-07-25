@@ -10,6 +10,8 @@ import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.divider.MaterialDivider;
+
 import java.util.List;
 
 public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductViewHolder> {
@@ -19,8 +21,6 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
     public ProductAdapter(List<ProductModel> productList) {
         this.productList = productList;
     }
-
-    private LinearLayout ll_visibleLayout;
 
     @NonNull
     @Override
@@ -37,7 +37,9 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
         holder.tv_productPrice.setText(String.valueOf(productModel.getProductPrice()));
 
         Boolean isExpanded = productList.get(position).isExpanded();
+        holder.tv_seeMore.setVisibility(isExpanded ? View.GONE :View.VISIBLE);
         holder.cl_hiddenLayout.setVisibility(isExpanded ? View.VISIBLE : View.GONE);
+        holder.d_seeMoreDivider.setVisibility(isExpanded ? View.GONE : View.VISIBLE);
 
     }
 
@@ -51,6 +53,9 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
         TextView tv_productPrice;
 
         ConstraintLayout cl_hiddenLayout;
+        TextView tv_seeMore;
+        TextView tv_seeLess;
+        MaterialDivider d_seeMoreDivider;
 
         public ProductViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -59,9 +64,19 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
             tv_productPrice = itemView.findViewById(R.id.tv_productPrice);
 
             cl_hiddenLayout = itemView.findViewById(R.id.cl_hiddenLayout);
-            ll_visibleLayout = itemView.findViewById(R.id.ll_visibleLayout);
+            tv_seeMore = itemView.findViewById(R.id.tv_seeMore);
+            tv_seeLess = itemView.findViewById(R.id.tv_seeLess);
+            d_seeMoreDivider = itemView.findViewById(R.id.d_seeMoreDivider);
 
-            ll_visibleLayout.setOnClickListener(new View.OnClickListener() {
+            tv_seeMore.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    ProductModel productModel = productList.get(getAdapterPosition());
+                    productModel.setExpanded(!productModel.isExpanded());
+                    notifyItemChanged(getAdapterPosition());
+                }
+            });
+            tv_seeLess.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     ProductModel productModel = productList.get(getAdapterPosition());

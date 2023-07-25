@@ -19,78 +19,107 @@
             <LinearLayout
                 android:id="@+id/ll_visibleLayout"
                 android:layout_width="match_parent"
-                android:layout_height="125dp"
-                android:orientation="horizontal"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                android:background="?attr/selectableItemBackground">
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                tools:ignore="MissingConstraints">
 
                 <LinearLayout
-                    android:orientation="vertical"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:padding="10dip"
-                    android:layout_margin="5dp"
-                    android:layout_weight="1">
-
-                    <Switch
-                        android:id="@+id/s_productStatus"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="8dp">
-                    </Switch>
-
-                    <TextView
-                        android:id="@+id/tv_productName"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="Product Name jjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj"
-                        android:singleLine="true"
-                        android:layout_marginBottom="8dp">
-                    </TextView>
+                    android:layout_width="match_parent"
+                    android:layout_height="125dp"
+                    android:orientation="horizontal"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    android:background="?attr/selectableItemBackground">
 
                     <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal">
+                        android:orientation="vertical"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:padding="10dip"
+                        android:layout_margin="5dp"
+                        android:layout_weight="1">
 
-                        <TextView
-                            android:id="@+id/tv_titleProductPrice"
+                        <Switch
+                            android:id="@+id/s_productStatus"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Price: "
-                            android:textStyle="bold">
-                        </TextView>
+                            android:layout_marginBottom="8dp">
+                        </Switch>
 
                         <TextView
-                            android:id="@+id/tv_productPrice"
+                            android:id="@+id/tv_productName"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Product Name"
+                            android:singleLine="true"
+                            android:layout_marginBottom="8dp">
+                        </TextView>
+
+                        <LinearLayout
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="50.0">
-                        </TextView>
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:id="@+id/tv_titleProductPrice"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Price: "
+                                android:textStyle="bold">
+                            </TextView>
+
+                            <TextView
+                                android:id="@+id/tv_productPrice"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="50.0">
+                            </TextView>
+
+                        </LinearLayout>
 
                     </LinearLayout>
 
+                    <RelativeLayout
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_margin="5dp"
+                        android:layout_weight="1">
+
+                        <ImageView
+                            android:id="@+id/iv_productImage"
+                            android:layout_width="wrap_content"
+                            android:layout_height="200dp"
+                            android:scaleType="centerCrop"
+                            android:src="@drawable/product_profile_pic">
+                        </ImageView>
+
+                    </RelativeLayout>
+
                 </LinearLayout>
 
-                <RelativeLayout
-                    android:layout_width="0dp"
+                <com.google.android.material.divider.MaterialDivider
+                    android:id="@+id/d_seeMoreDivider"
+                    android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:layout_margin="5dp"
-                    android:layout_weight="1">
+                    android:layout_marginTop="10dp"
+                    android:layout_marginStart="8dp"
+                    app:dividerColor="@color/grey"
+                    android:layout_marginEnd="8dp">
+                </com.google.android.material.divider.MaterialDivider>
 
-                    <ImageView
-                        android:id="@+id/iv_productImage"
-                        android:layout_width="wrap_content"
-                        android:layout_height="200dp"
-                        android:scaleType="centerCrop"
-                        android:src="@drawable/product_profile_pic">
-                    </ImageView>
-
-                </RelativeLayout>
+                <TextView
+                    android:id="@+id/tv_seeMore"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:drawableEnd="@drawable/downward_arrow"
+                    android:textColor="@color/orange"
+                    android:text="see more">
+                </TextView>
 
             </LinearLayout>
+
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/cl_hiddenLayout"
@@ -112,6 +141,7 @@
                 </TextView>
 
                 <RelativeLayout
+                    android:id="@+id/rl_buttons"
                     xmlns:android="http://schemas.android.com/apk/res/android"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -154,6 +184,33 @@
                         android:layout_toRightOf="@+id/centerPoint" />
 
                 </RelativeLayout>
+
+                <com.google.android.material.divider.MaterialDivider
+                    android:id="@+id/d_seeLessDivider"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginTop="10dp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.0"
+                    app:layout_constraintStart_toStartOf="@id/rl_buttons"
+                    app:layout_constraintTop_toBottomOf="@id/rl_buttons">
+                </com.google.android.material.divider.MaterialDivider>
+
+
+                <TextView
+                    android:id="@+id/tv_seeLess"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:textColor="@color/orange"
+                    android:text="see less"
+                    android:drawableEnd="@drawable/upward_arrow"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.0"
+                    app:layout_constraintStart_toStartOf="@id/d_seeLessDivider"
+                    app:layout_constraintTop_toBottomOf="@id/d_seeLessDivider">
+
+                </TextView>
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
