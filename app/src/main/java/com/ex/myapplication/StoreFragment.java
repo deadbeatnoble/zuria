@@ -43,7 +43,6 @@ public class StoreFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.fragment_store, container, false);
         productList = generateProductModel();
@@ -51,20 +50,31 @@ public class StoreFragment extends Fragment {
         storeRecyclerView = rootView.findViewById(R.id.rv_product);
         storeRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
-        productAdapter = new ProductAdapter(productList);
+        productAdapter = new ProductAdapter(productList, getContext());
         storeRecyclerView.setAdapter(productAdapter);
+
+        fab_createProduct = rootView.findViewById(R.id.fab_createProduct);
+
+        fab_createProduct.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(getActivity(), CreateProduct.class);
+                startActivity(intent);
+            }
+        });
 
         return rootView;
     }
 
     private List<ProductModel> generateProductModel() {
         List<ProductModel> productModels = new ArrayList<>();
-        productModels.add(new ProductModel("Special Erteb", 60.50));
-        productModels.add(new ProductModel("Fasting Erteb", 35.00));
-        productModels.add(new ProductModel("Normal Erteb", 40.50));
-        productModels.add(new ProductModel("Erteb with Ketchup", 45.50));
-        productModels.add(new ProductModel("Erteb without Felafillllllllllllll", 50.50));
-
+        productModels.addAll(new DBHelper(this.getActivity()).getProducts());
+        /*productModels.add(new ProductModel(productId, "Special Erteb", 60.50, productDesciption, ownerId));
+        productModels.add(new ProductModel(productId, "Fasting Erteb", 35.00, productDesciption, ownerId));
+        productModels.add(new ProductModel(productId, "Normal Erteb", 40.50, productDesciption, ownerId));
+        productModels.add(new ProductModel(productId, "Erteb with Ketchup", 45.50, productDesciption, ownerId));
+        productModels.add(new ProductModel(productId, "Erteb without Felafillllllllllllll", 50.50, productDesciption, ownerId));
+*/
         return productModels;
     }
 

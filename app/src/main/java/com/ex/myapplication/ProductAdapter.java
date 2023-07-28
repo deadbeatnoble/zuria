@@ -1,5 +1,7 @@
 package com.ex.myapplication;
 
+import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -7,6 +9,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.widget.AppCompatButton;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -18,8 +21,11 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
 
     private List<ProductModel> productList;
 
-    public ProductAdapter(List<ProductModel> productList) {
+    private Context context;
+
+    public ProductAdapter(List<ProductModel> productList, Context context) {
         this.productList = productList;
+        this.context = context;
     }
 
     @NonNull
@@ -35,12 +41,31 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
         ProductModel productModel = productList.get(position);
         holder.tv_productName.setText(productModel.getProductName());
         holder.tv_productPrice.setText(String.valueOf(productModel.getProductPrice()));
+        holder.tv_productDescription.setText(productModel.getProductDesciption());
 
         Boolean isExpanded = productList.get(position).isExpanded();
         holder.tv_seeMore.setVisibility(isExpanded ? View.GONE :View.VISIBLE);
         holder.cl_hiddenLayout.setVisibility(isExpanded ? View.VISIBLE : View.GONE);
         holder.d_seeMoreDivider.setVisibility(isExpanded ? View.GONE : View.VISIBLE);
 
+        holder.acb_editProduct.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(context, UpdateProduct.class);
+                intent.putExtra("PRODUCT", productModel);
+
+                context.startActivity(intent);
+            }
+        });
+        holder.acb_removeProduct.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                DBHelper dbHelper = new DBHelper(context);
+                dbHelper.deleteProduct(productModel);
+                productList.remove(position);
+                notifyDataSetChanged();
+            }
+        });
     }
 
     @Override
@@ -51,22 +76,29 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
     public class ProductViewHolder extends RecyclerView.ViewHolder{
         TextView tv_productName;
         TextView tv_productPrice;
+        TextView tv_productDescription;
 
         ConstraintLayout cl_hiddenLayout;
         TextView tv_seeMore;
         TextView tv_seeLess;
         MaterialDivider d_seeMoreDivider;
+        AppCompatButton acb_removeProduct;
+        AppCompatButton acb_editProduct;
 
         public ProductViewHolder(@NonNull View itemView) {
             super(itemView);
 
             tv_productName = itemView.findViewById(R.id.tv_productName);
             tv_productPrice = itemView.findViewById(R.id.tv_productPrice);
+            tv_productDescription = itemView.findViewById(R.id.tv_productDescription);
 
             cl_hiddenLayout = itemView.findViewById(R.id.cl_hiddenLayout);
             tv_seeMore = itemView.findViewById(R.id.tv_seeMore);
             tv_seeLess = itemView.findViewById(R.id.tv_seeLess);
             d_seeMoreDivider = itemView.findViewById(R.id.d_seeMoreDivider);
+
+            acb_removeProduct = itemView.findViewById(R.id.acb_removeProduct);
+            acb_editProduct = itemView.findViewById(R.id.acb_editProduct);
 
             tv_seeMore.setOnClickListener(new View.OnClickListener() {
                 @Override
