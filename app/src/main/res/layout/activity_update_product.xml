@@ -38,7 +38,7 @@
                 android:orientation="vertical">
 
                 <ImageView
-                    android:id="@+id/iv_productImage"
+                    android:id="@+id/iv_productImageUP"
                     android:layout_width="match_parent"
                     android:layout_height="200dp"
                     android:scaleType="centerCrop"
@@ -127,24 +127,11 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="16dp"
-            android:src="@drawable/gallery"
-            android:backgroundTint="@color/white"
-            app:layout_anchor="@id/iv_productImage"
-            app:layout_anchorGravity="bottom|right">
-        </com.google.android.material.floatingactionbutton.FloatingActionButton>
-
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/fab_imageFromCamera"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="16dp"
             android:src="@drawable/camera"
             android:backgroundTint="@color/white"
-            app:layout_anchor="@id/iv_productImage"
-            app:layout_anchorGravity="bottom|left">
+            app:layout_anchor="@id/iv_productImageUP"
+            app:layout_anchorGravity="bottom|right">
         </com.google.android.material.floatingactionbutton.FloatingActionButton>
-
-
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 

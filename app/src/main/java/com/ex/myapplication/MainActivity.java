@@ -46,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 if (user_phone_number.getText().toString().equals("")) {
                     user_phone_number.setError("This field is empty");
-                } else if (user_phone_number.getText().toString().equals("0994850480")) {
+                } else if (user_phone_number.getText().toString().equals("0994850480") || user_phone_number.getText().toString().equals("0996916020")) {
                     if (admin_code.getText().toString().equals("6994")) {
                         //admin pages
                         //code goes here

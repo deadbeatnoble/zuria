@@ -1,13 +1,19 @@
 package com.ex.myapplication;
 
+import static androidx.constraintlayout.widget.ConstraintLayoutStates.TAG;
+
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.util.Log;
 
 import androidx.annotation.Nullable;
 
+import java.sql.Blob;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,6 +22,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String COLUMN_PRODUCT_NAME = "PRODUCT_NAME";
     public static final String COLUMN_PRODUCT_PRICE = "PRODUCT_PRICE";
     public static final String COLUMN_PRODUCT_DESCRIPTION = "PRODUCT_DESCRIPTION";
+    public static final String COLUMN_PRODUCT_IMAGE = "PRODUCT_IMAGE";
     public static final String COLUMN_ID = "ID";
     private static final String COLUMN_OWNER_ID = "OID";
 
@@ -25,7 +32,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        String createTableStatement = "CREATE TABLE " + PRODUCT_TABLE + " ( " + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + COLUMN_PRODUCT_NAME + " TEXT, " + COLUMN_PRODUCT_PRICE + " INTEGER, " + COLUMN_PRODUCT_DESCRIPTION + " TEXT, " + COLUMN_OWNER_ID + " TEXT)";
+        String createTableStatement = "CREATE TABLE " + PRODUCT_TABLE + " ( " + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + COLUMN_PRODUCT_NAME + " TEXT, " + COLUMN_PRODUCT_PRICE + " REAL, " + COLUMN_PRODUCT_DESCRIPTION + " TEXT, " + COLUMN_PRODUCT_IMAGE + " BLOB, "+ COLUMN_OWNER_ID + " TEXT)";
 
         db.execSQL(createTableStatement);
     }
@@ -36,20 +43,23 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
     public boolean addProduct(ProductModel productModel) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues cv = new ContentValues();
-
-        cv.put(COLUMN_PRODUCT_NAME, productModel.getProductName());
-        cv.put(COLUMN_PRODUCT_PRICE, productModel.getProductPrice());
-        cv.put(COLUMN_PRODUCT_DESCRIPTION, productModel.getProductDesciption());
-        cv.put(COLUMN_OWNER_ID, productModel.getOwnerId());
-
-        long insert = db.insert(PRODUCT_TABLE, null, cv);
-        if (insert == -1) {
+        if (productModel == null) {
+            Log.e(TAG, "Product object is null");
             return false;
-        } else {
-            return true;
         }
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_PRODUCT_NAME, productModel.getProductName());
+        values.put(COLUMN_PRODUCT_PRICE, String.valueOf(productModel.getProductPrice()));
+        values.put(COLUMN_PRODUCT_DESCRIPTION, productModel.getProductDesciption());
+        values.put(COLUMN_PRODUCT_IMAGE, productModel.getProductImage());
+        values.put(COLUMN_OWNER_ID, productModel.getOwnerId());
+
+        db.insert(PRODUCT_TABLE, null, values);
+        db.close();
+
+        return  true;
     }
 
     public boolean deleteProduct(ProductModel productModel) {
@@ -77,11 +87,15 @@ public class DBHelper extends SQLiteOpenHelper {
             do {
                 int productId = cursor.getInt(0);
                 String productName = cursor.getString(1);
-                int productPrice = cursor.getInt(2);
+                double productPrice = cursor.getDouble(2);
                 String productDescription = cursor.getString(3);
-                String ownerId = cursor.getString(4);
 
-                ProductModel productModel = new ProductModel(productId,productName,productPrice,productDescription, ownerId);
+                byte[] productImage = cursor.getBlob(4);
+                //Bitmap imageBitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+
+                String ownerId = cursor.getString(5);
+
+                ProductModel productModel = new ProductModel(productId,productName,productPrice,productDescription,productImage,ownerId);
                 returnList.add(productModel);
 
             } while(cursor.moveToNext());
@@ -101,6 +115,7 @@ public class DBHelper extends SQLiteOpenHelper {
         cv.put(COLUMN_PRODUCT_NAME, productModel.getProductName());
         cv.put(COLUMN_PRODUCT_PRICE, productModel.getProductPrice());
         cv.put(COLUMN_PRODUCT_DESCRIPTION, productModel.getProductDesciption());
+        cv.put(COLUMN_PRODUCT_IMAGE, productModel.getProductImage());
         cv.put(COLUMN_OWNER_ID, productModel.getOwnerId());
 
 
@@ -110,5 +125,47 @@ public class DBHelper extends SQLiteOpenHelper {
         } else {
             return true;
         }
+    }
+
+    public ProductModel getProductById(int productId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        String[] projection = {
+                DBHelper.COLUMN_ID,
+                DBHelper.COLUMN_PRODUCT_NAME,
+                DBHelper.COLUMN_PRODUCT_PRICE,
+                DBHelper.COLUMN_PRODUCT_DESCRIPTION,
+                DBHelper.COLUMN_PRODUCT_IMAGE,
+                DBHelper.COLUMN_OWNER_ID
+        };
+
+        String selection = DBHelper.COLUMN_ID + " = ?";
+        String[] selectionArgs = { String.valueOf(productId) };
+
+        Cursor cursor = db.query(
+                DBHelper.PRODUCT_TABLE,
+                projection,
+                selection,
+                selectionArgs,
+                null,
+                null,
+                null
+        );
+
+        ProductModel productModel = null;
+
+        if (cursor.moveToFirst()) {
+            String productName = cursor.getString(cursor.getColumnIndexOrThrow(DBHelper.COLUMN_PRODUCT_NAME));
+            double productPrice = cursor.getDouble(cursor.getColumnIndexOrThrow(DBHelper.COLUMN_PRODUCT_PRICE));
+            String productDescription = cursor.getString(cursor.getColumnIndexOrThrow(DBHelper.COLUMN_PRODUCT_DESCRIPTION));
+            byte[] productImage = cursor.getBlob(cursor.getColumnIndexOrThrow(DBHelper.COLUMN_PRODUCT_IMAGE));
+            String ownerId = cursor.getString(cursor.getColumnIndexOrThrow(DBHelper.COLUMN_OWNER_ID));
+            productModel = new ProductModel(productId, productName, productPrice, productDescription, productImage, ownerId);
+        }
+
+        cursor.close();
+        db.close();
+
+        return productModel;
     }
 }

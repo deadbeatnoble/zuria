@@ -1,12 +1,14 @@
 package com.ex.myapplication;
 
 import java.io.Serializable;
+import java.sql.Blob;
 
 public class ProductModel implements Serializable {
     private int ProductId;
     private String productName;
     private double productPrice;
     private String productDesciption;
+    private byte[] productImage;
     private String ownerId;
 
     private Boolean expanded;
@@ -19,11 +21,12 @@ public class ProductModel implements Serializable {
         this.expanded = expanded;
     }
 
-    public ProductModel(int productId, String productName, double productPrice, String productDesciption, String ownerId) {
+    public ProductModel(int productId, String productName, double productPrice, String productDesciption, byte[] productImage,String ownerId) {
         ProductId = productId;
         this.productName = productName;
         this.productPrice = productPrice;
         this.productDesciption = productDesciption;
+        this.productImage = productImage;
         this.ownerId = ownerId;
         this.expanded = false;
     }
@@ -48,7 +51,7 @@ public class ProductModel implements Serializable {
         return productPrice;
     }
 
-    public void setProductPrice(double productPrice) {
+    public void setProductPrice(int productPrice) {
         this.productPrice = productPrice;
     }
 
@@ -58,6 +61,14 @@ public class ProductModel implements Serializable {
 
     public void setProductDesciption(String productDesciption) {
         this.productDesciption = productDesciption;
+    }
+
+    public byte[] getProductImage() {
+        return productImage;
+    }
+
+    public void setProductImage(byte[] productImage) {
+        this.productImage = productImage;
     }
 
     public String getOwnerId() {

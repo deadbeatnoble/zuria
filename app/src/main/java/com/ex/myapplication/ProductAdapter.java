@@ -2,9 +2,12 @@ package com.ex.myapplication;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -43,6 +46,10 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
         holder.tv_productPrice.setText(String.valueOf(productModel.getProductPrice()));
         holder.tv_productDescription.setText(productModel.getProductDesciption());
 
+        Bitmap imageBitmap = BitmapFactory.decodeByteArray(productModel.getProductImage(), 0, productModel.getProductImage().length);
+        holder.iv_productImage.setImageBitmap(imageBitmap);
+
+
         Boolean isExpanded = productList.get(position).isExpanded();
         holder.tv_seeMore.setVisibility(isExpanded ? View.GONE :View.VISIBLE);
         holder.cl_hiddenLayout.setVisibility(isExpanded ? View.VISIBLE : View.GONE);
@@ -51,9 +58,9 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
         holder.acb_editProduct.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                int productId = productList.get(position).getProductId();
                 Intent intent = new Intent(context, UpdateProduct.class);
-                intent.putExtra("PRODUCT", productModel);
-
+                intent.putExtra("PRODUCT_ID", productId);
                 context.startActivity(intent);
             }
         });
@@ -77,6 +84,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
         TextView tv_productName;
         TextView tv_productPrice;
         TextView tv_productDescription;
+        ImageView iv_productImage;
 
         ConstraintLayout cl_hiddenLayout;
         TextView tv_seeMore;
@@ -91,6 +99,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
             tv_productName = itemView.findViewById(R.id.tv_productName);
             tv_productPrice = itemView.findViewById(R.id.tv_productPrice);
             tv_productDescription = itemView.findViewById(R.id.tv_productDescription);
+            iv_productImage = itemView.findViewById(R.id.iv_productImage);
 
             cl_hiddenLayout = itemView.findViewById(R.id.cl_hiddenLayout);
             tv_seeMore = itemView.findViewById(R.id.tv_seeMore);

@@ -6,6 +6,7 @@ import android.os.Bundle;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -32,6 +33,7 @@ public class StoreFragment extends Fragment {
     private List<ProductModel> productList;
     private RecyclerView storeRecyclerView;
     private ProductAdapter productAdapter;
+    private SwipeRefreshLayout srl_refreshRecyclerView;
 
 
 
@@ -53,6 +55,8 @@ public class StoreFragment extends Fragment {
         productAdapter = new ProductAdapter(productList, getContext());
         storeRecyclerView.setAdapter(productAdapter);
 
+        srl_refreshRecyclerView = rootView.findViewById(R.id.srl_refreshRecyclerView);
+
         fab_createProduct = rootView.findViewById(R.id.fab_createProduct);
 
         fab_createProduct.setOnClickListener(new View.OnClickListener() {
@@ -60,6 +64,17 @@ public class StoreFragment extends Fragment {
             public void onClick(View view) {
                 Intent intent = new Intent(getActivity(), CreateProduct.class);
                 startActivity(intent);
+            }
+        });
+        srl_refreshRecyclerView.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                productList.clear();
+                productList.addAll(generateProductModel());
+                // Notify the adapter that the data set has changed
+                productAdapter.notifyDataSetChanged();
+                // Stop the refreshing animation
+                srl_refreshRecyclerView.setRefreshing(false);
             }
         });
 

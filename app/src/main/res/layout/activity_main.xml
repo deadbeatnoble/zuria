@@ -30,17 +30,17 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="-70dp"
-            android:text="Zuria"
+            android:layout_marginTop="-65dp"
+            android:text="Shangul"
             android:textColor="@color/black"
-            android:textSize="100dp"></TextView>
+            android:textSize="75dp"></TextView>
 
         <TextView
             android:id="@+id/bio"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="150dp"
-            android:text="blah blah blah..."
+            android:text="scan. order. eat."
             android:textSize="15dp"
             tools:ignore="TextSizeCheck">
         </TextView>
