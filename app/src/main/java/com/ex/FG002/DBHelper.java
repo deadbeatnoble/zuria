@@ -1,4 +1,4 @@
-package com.ex.myapplication;
+package com.ex.FG002;
 
 import static androidx.constraintlayout.widget.ConstraintLayoutStates.TAG;
 
@@ -7,13 +7,10 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
 
-import java.sql.Blob;
 import java.util.ArrayList;
 import java.util.List;
 

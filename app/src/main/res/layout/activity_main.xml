@@ -39,8 +39,8 @@
             android:id="@+id/bio"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="150dp"
-            android:text="scan. order. eat."
+            android:layout_marginBottom="100dp"
+            android:text="look around"
             android:textSize="15dp"
             tools:ignore="TextSizeCheck">
         </TextView>
@@ -55,37 +55,51 @@
             android:textSize="20dp"
             android:textColor="@color/black">
         </EditText>
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Set Current Number"
-            android:id="@+id/default_user_phone_number"
-            android:layout_marginTop="10dp"
-            android:layout_gravity="right"
-            android:textColor="@color/grey"
-            >
-        </TextView>
         <EditText
-            android:layout_width="100dp"
-            android:layout_height="wrap_content"
-            android:id="@+id/admin_code"
-            android:layout_gravity="left"
             android:drawableStart="@drawable/key"
             android:drawablePadding="5dp"
-            android:hint="0000"
+            android:id="@+id/et_userPassword"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="phone"
+            android:hint="Password"
             android:textSize="20dp"
-            android:inputType="numberPassword"
-            android:maxLength="4"
-            android:layout_marginBottom="50dp">
+            android:textColor="@color/black"
+            android:layout_marginBottom="100dp">
         </EditText>
+
         <Button
             android:id="@+id/confirm"
             android:layout_width="150dp"
             android:layout_height="wrap_content"
             android:text="Continue"
             android:drawableEnd="@drawable/farrow"
-            android:layout_gravity="end">
+            android:layout_gravity="end"
+            android:layout_marginBottom="24dp">
         </Button>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="Don't have an account?">
+            </TextView>
+            <TextView
+                android:id="@+id/tv_registrationPage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Create account"
+                android:layout_marginStart="8dp"
+                android:textColor="@color/light_blue">
+            </TextView>
+
+        </LinearLayout>
+
 
     </LinearLayout>
 </LinearLayout>

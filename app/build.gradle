@@ -1,13 +1,14 @@
 plugins {
     id 'com.android.application'
+    id 'com.google.gms.google-services'
 }
 
 android {
-    namespace 'com.ex.myapplication'
+    namespace 'com.ex.FG002'
     compileSdk 33
 
     defaultConfig {
-        applicationId "com.ex.myapplication"
+        applicationId "com.ex.FG002"
         minSdk 24
         targetSdk 33
         versionCode 1
@@ -43,6 +44,7 @@ dependencies {
         }
     }
 
+    implementation 'com.google.firebase:firebase-auth:19.2.0'
     implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0"
     implementation 'com.theartofdev.edmodo:android-image-cropper:2.8.+'
     implementation 'com.squareup.picasso:picasso:2.8'

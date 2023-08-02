@@ -1,4 +1,4 @@
-package com.ex.myapplication;
+package com.ex.FG002;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
@@ -7,7 +7,7 @@ import androidx.fragment.app.FragmentTransaction;
 
 import android.os.Bundle;
 
-import com.ex.myapplication.databinding.ActivityShopOwnerPovBinding;
+import com.ex.FG002.databinding.ActivityShopOwnerPovBinding;
 
 public class shopOwnerPOV extends AppCompatActivity {
 

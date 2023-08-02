@@ -1,7 +1,6 @@
-package com.ex.myapplication;
+package com.ex.FG002;
 
 import java.io.Serializable;
-import java.sql.Blob;
 
 public class ProductModel implements Serializable {
     private int ProductId;

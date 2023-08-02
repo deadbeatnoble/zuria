@@ -1,4 +1,4 @@
-package com.ex.myapplication;
+package com.ex.FG002;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
