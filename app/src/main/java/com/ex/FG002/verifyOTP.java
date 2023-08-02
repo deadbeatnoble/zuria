@@ -89,8 +89,18 @@ public class verifyOTP extends AppCompatActivity {
                                 public void onComplete(@NonNull Task<AuthResult> task) {
                                     pb_progressBar.setVisibility(View.GONE);
                                     btn_receiveVerification.setVisibility(View.VISIBLE);
+                                    String mobile = getIntent().getStringExtra("number");
                                     if (task.isSuccessful()) {
-                                        Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                                        Intent intent = new Intent(getApplicationContext(), RegisterUser.class);
+
+
+
+
+
+
+
+
+                                        intent.putExtra("usermobile", mobile);
                                         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                                         startActivity(intent);
                                     } else {
