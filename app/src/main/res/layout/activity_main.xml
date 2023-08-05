@@ -15,7 +15,6 @@
         android:layout_height="match_parent"
         android:layout_marginStart="30dp"
         android:layout_marginEnd="30dp"
-        android:layout_marginLeft="30dp"
         android:gravity="center_horizontal"
         android:orientation="vertical">
 
@@ -44,40 +43,80 @@
             android:textSize="15dp"
             tools:ignore="TextSizeCheck">
         </TextView>
-        <EditText
-            android:drawableStart="@drawable/phone"
-            android:drawablePadding="5dp"
-            android:id="@+id/user_phone_number"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:inputType="phone"
-            android:hint="Phone Number"
-            android:textSize="20dp"
-            android:textColor="@color/black">
-        </EditText>
-        <EditText
-            android:drawableStart="@drawable/key"
-            android:drawablePadding="5dp"
-            android:id="@+id/et_userPassword"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:inputType="phone"
-            android:hint="Password"
-            android:textSize="20dp"
-            android:textColor="@color/black"
-            android:layout_marginBottom="100dp">
-        </EditText>
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:orientation="horizontal"
+            android:weightSum="1">
+            <TextView
+                android:layout_weight="0.1"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:text="+251-"
+                android:textColor="@color/black"
+                android:textStyle="bold"
+                android:textSize="18dp"
+                android:background="@drawable/left_side_border">
+            </TextView>
+            <EditText
+                android:id="@+id/user_phone_number"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_weight="0.9"
+                android:textSize="18dp"
+                android:textColor="@color/black"
+                android:hint="Enter mobile number"
+                android:inputType="phone"
+                android:background="@drawable/right_side_border"
+                android:padding="8dp">
+            </EditText>
+        </LinearLayout>
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/til_userPassword"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            app:passwordToggleEnabled="true"
+            app:passwordToggleTint="@color/black"
+            app:hintEnabled="false"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="100dp">
+            <com.google.android.material.textfield.TextInputEditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Enter pin"
+                android:textSize="18dp"
+                android:textColor="@color/black"
+                android:padding="8dp"
+                android:inputType="numberPassword"
+                android:maxLength="6"
+                android:drawableStart="@drawable/key"
+                android:drawablePadding="8dp"
+                android:drawableTint="@color/gold"
+                android:background="@drawable/all_side_border">
+            </com.google.android.material.textfield.TextInputEditText>
+        </com.google.android.material.textfield.TextInputLayout>
         <Button
             android:id="@+id/confirm"
             android:layout_width="150dp"
             android:layout_height="wrap_content"
             android:text="Log in"
             android:drawableEnd="@drawable/farrow"
-            android:layout_gravity="end"
-            android:layout_marginBottom="24dp">
+            android:layout_gravity="end">
         </Button>
+        <ProgressBar
+            android:id="@+id/pb_progressBar"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="right"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="50dp"
+            android:visibility="gone">
+        </ProgressBar>
+
         <LinearLayout
+            android:layout_marginTop="10dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"

@@ -17,26 +17,51 @@
         android:paddingTop="100dp">
 
 
-
         <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/tiet_newPassword"
+            android:id="@+id/til_newPassword"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="50dp"
+            app:passwordToggleEnabled="true"
+            app:passwordToggleTint="@color/black"
+            app:hintEnabled="false">
             <com.google.android.material.textfield.TextInputEditText
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="New Password">
+                android:hint="New password"
+                android:textSize="18dp"
+                android:textColor="@color/black"
+                android:padding="8dp"
+                android:inputType="numberPassword"
+                android:maxLength="6"
+                android:drawableStart="@drawable/key"
+                android:drawablePadding="8dp"
+                android:drawableTint="@color/gold"
+                android:background="@drawable/all_side_border">
             </com.google.android.material.textfield.TextInputEditText>
         </com.google.android.material.textfield.TextInputLayout>
+
         <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/tiet_confirmPassword"
+            android:id="@+id/til_confirmPassword"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="50dp"
+            app:passwordToggleEnabled="true"
+            app:passwordToggleTint="@color/black"
+            app:hintEnabled="false"
+            android:layout_marginTop="8dp"
             android:layout_marginBottom="100dp">
             <com.google.android.material.textfield.TextInputEditText
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Confirm Password">
+                android:hint="Confirm password"
+                android:textSize="18dp"
+                android:textColor="@color/black"
+                android:padding="8dp"
+                android:inputType="numberPassword"
+                android:maxLength="6"
+                android:drawableStart="@drawable/key"
+                android:drawablePadding="8dp"
+                android:drawableTint="@color/gold"
+                android:background="@drawable/all_side_border">
             </com.google.android.material.textfield.TextInputEditText>
         </com.google.android.material.textfield.TextInputLayout>
 

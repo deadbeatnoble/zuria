@@ -13,10 +13,16 @@ import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.FirebaseException;
 import com.google.firebase.auth.PhoneAuthCredential;
 import com.google.firebase.auth.PhoneAuthProvider;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
+import java.lang.ref.Reference;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -26,6 +32,7 @@ public class sendOTP extends AppCompatActivity {
     private EditText et_userPhoneNumber;
     private Button btn_receiveVerification;
     private ProgressBar pb_progressBar;
+    DatabaseReference reference;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,44 +68,57 @@ public class sendOTP extends AppCompatActivity {
         btn_receiveVerification.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (et_userPhoneNumber.getText().toString().trim().isEmpty()) {
-                    Toast.makeText(sendOTP.this, "Enter Mobile", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
                 pb_progressBar.setVisibility(View.VISIBLE);
                 btn_receiveVerification.setVisibility(View.INVISIBLE);
 
-                PhoneAuthProvider.getInstance().verifyPhoneNumber(
-                        "+251" + et_userPhoneNumber.getText().toString(),
-                        60,
-                        TimeUnit.SECONDS,
-                        sendOTP.this,
-                        new PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
-                            @Override
-                            public void onVerificationCompleted(@NonNull PhoneAuthCredential phoneAuthCredential) {
+                reference = FirebaseDatabase.getInstance().getReference("Users");
+                reference.child(et_userPhoneNumber.getText().toString()).get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DataSnapshot> task) {
+                        if (task.isSuccessful()) {
+                            if (task.getResult().exists()) {
+                                Toast.makeText(sendOTP.this, "User already exists", Toast.LENGTH_SHORT).show();
                                 pb_progressBar.setVisibility(View.GONE);
                                 btn_receiveVerification.setVisibility(View.VISIBLE);
-                            }
+                            } else {
 
-                            @Override
-                            public void onVerificationFailed(@NonNull FirebaseException e) {
-                                pb_progressBar.setVisibility(View.GONE);
-                                btn_receiveVerification.setVisibility(View.VISIBLE);
-                                Toast.makeText(sendOTP.this, e.getMessage(), Toast.LENGTH_SHORT).show();
-                            }
+                                PhoneAuthProvider.getInstance().verifyPhoneNumber(
+                                        "+251" + et_userPhoneNumber.getText().toString(),
+                                        60,
+                                        TimeUnit.SECONDS,
+                                        sendOTP.this,
+                                        new PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
+                                            @Override
+                                            public void onVerificationCompleted(@NonNull PhoneAuthCredential phoneAuthCredential) {
+                                                pb_progressBar.setVisibility(View.GONE);
+                                                btn_receiveVerification.setVisibility(View.VISIBLE);
+                                            }
 
-                            @Override
-                            public void onCodeSent(@NonNull String verificationId, @NonNull PhoneAuthProvider.ForceResendingToken forceResendingToken) {
-                                pb_progressBar.setVisibility(View.GONE);
-                                btn_receiveVerification.setVisibility(View.VISIBLE);
-                                Intent intent = new Intent(getApplicationContext(), verifyOTP.class);
-                                intent.putExtra("number", et_userPhoneNumber.getText().toString());
-                                intent.putExtra("verificationId", verificationId);
-                                startActivity(intent);
+                                            @Override
+                                            public void onVerificationFailed(@NonNull FirebaseException e) {
+                                                pb_progressBar.setVisibility(View.GONE);
+                                                btn_receiveVerification.setVisibility(View.VISIBLE);
+                                                Toast.makeText(sendOTP.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                                            }
+
+                                            @Override
+                                            public void onCodeSent(@NonNull String verificationId, @NonNull PhoneAuthProvider.ForceResendingToken forceResendingToken) {
+                                                pb_progressBar.setVisibility(View.GONE);
+                                                btn_receiveVerification.setVisibility(View.VISIBLE);
+                                                Intent intent = new Intent(getApplicationContext(), verifyOTP.class);
+                                                intent.putExtra("number", et_userPhoneNumber.getText().toString());
+                                                intent.putExtra("verificationId", verificationId);
+                                                startActivity(intent);
+                                            }
+                                        }
+                                );
+
                             }
+                        } else {
+                            Toast.makeText(sendOTP.this, "Connection error", Toast.LENGTH_SHORT).show();
                         }
-                );
+                    }
+                });
             }
         });
 

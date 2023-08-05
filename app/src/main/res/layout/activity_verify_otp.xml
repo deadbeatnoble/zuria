@@ -6,14 +6,17 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:gravity="center_horizontal"
-    tools:context=".verifyOTP">
+    tools:context=".verifyOTP"
+    android:background="@color/white"
+    android:paddingTop="250dp"
+    android:paddingLeft="30dp"
+    android:paddingRight="30dp">
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Enter OTP sent to"
+        android:text="Enter verification code sent to"
         android:gravity="center"
-        android:layout_marginTop="250dp"
         android:textColor="@color/black">
     </TextView>
     <TextView
@@ -22,8 +25,9 @@
         android:id="@+id/tv_userPhoneNumber"
         android:layout_marginStart="70dp"
         android:layout_marginEnd="60dp"
-        android:textSize="14sp"
-        android:textStyle="bold">
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="@color/black">
     </TextView>
 
     <LinearLayout
@@ -42,7 +46,7 @@
             android:importantForAutofill="no"
             android:inputType="number"
             android:maxLength="1"
-            android:textColor="@color/white"
+            android:textColor="@color/black"
             android:textSize="20sp"
             android:textStyle="bold">
         </EditText>
@@ -56,7 +60,7 @@
             android:importantForAutofill="no"
             android:inputType="number"
             android:maxLength="1"
-            android:textColor="@color/white"
+            android:textColor="@color/black"
             android:textSize="20sp"
             android:textStyle="bold">
         </EditText>
@@ -70,7 +74,7 @@
             android:importantForAutofill="no"
             android:inputType="number"
             android:maxLength="1"
-            android:textColor="@color/white"
+            android:textColor="@color/black"
             android:textSize="20sp"
             android:textStyle="bold">
         </EditText>
@@ -84,7 +88,7 @@
             android:importantForAutofill="no"
             android:inputType="number"
             android:maxLength="1"
-            android:textColor="@color/white"
+            android:textColor="@color/black"
             android:textSize="20sp"
             android:textStyle="bold">
         </EditText>
@@ -98,7 +102,7 @@
             android:importantForAutofill="no"
             android:inputType="number"
             android:maxLength="1"
-            android:textColor="@color/white"
+            android:textColor="@color/black"
             android:textSize="20sp"
             android:textStyle="bold">
         </EditText>
@@ -112,7 +116,7 @@
             android:importantForAutofill="no"
             android:inputType="number"
             android:maxLength="1"
-            android:textColor="@color/white"
+            android:textColor="@color/black"
             android:textSize="20sp"
             android:textStyle="bold">
         </EditText>
@@ -131,14 +135,15 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:layout_marginStart="70dp"
-        android:layout_marginEnd="60dp"
+        android:layout_marginStart="50dp"
+        android:layout_marginEnd="50dp"
         android:layout_marginTop="10dp">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Didn't receive code?">
+            android:text="Didn't receive code?"
+            android:textColor="@color/black">
         </TextView>
         <TextView
             android:id="@+id/tv_resendCode"

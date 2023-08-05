@@ -92,14 +92,6 @@ public class verifyOTP extends AppCompatActivity {
                                     String mobile = getIntent().getStringExtra("number");
                                     if (task.isSuccessful()) {
                                         Intent intent = new Intent(getApplicationContext(), RegisterUser.class);
-
-
-
-
-
-
-
-
                                         intent.putExtra("usermobile", mobile);
                                         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                                         startActivity(intent);
@@ -112,7 +104,7 @@ public class verifyOTP extends AppCompatActivity {
             }
         });
 
-        findViewById(R.id.tv_resendCode).setOnClickListener(new View.OnClickListener() {
+        tv_resendCode.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 PhoneAuthProvider.getInstance().verifyPhoneNumber(
