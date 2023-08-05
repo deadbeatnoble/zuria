@@ -165,4 +165,55 @@ public class DBHelper extends SQLiteOpenHelper {
 
         return productModel;
     }
+
+    public List<ProductModel> getOwnerProduct(String productOwnerId) {
+        List<ProductModel> returnList = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        String[] projection = {
+                DBHelper.COLUMN_ID,
+                DBHelper.COLUMN_PRODUCT_NAME,
+                DBHelper.COLUMN_PRODUCT_PRICE,
+                DBHelper.COLUMN_PRODUCT_DESCRIPTION,
+                DBHelper.COLUMN_PRODUCT_IMAGE,
+                DBHelper.COLUMN_OWNER_ID
+        };
+
+        String selection = DBHelper.COLUMN_OWNER_ID + " = ?";
+        String[] selectionArgs = { String.valueOf(productOwnerId) };
+
+        Cursor cursor = db.query(
+                DBHelper.PRODUCT_TABLE,
+                projection,
+                selection,
+                selectionArgs,
+                null,
+                null,
+                null
+        );
+
+        ProductModel productModel = null;
+
+        if (cursor.moveToFirst()) {
+            do {
+                int productId = cursor.getInt(cursor.getColumnIndexOrThrow(DBHelper.COLUMN_ID));
+                String productName = cursor.getString(cursor.getColumnIndexOrThrow(DBHelper.COLUMN_PRODUCT_NAME));
+                double productPrice = cursor.getDouble(cursor.getColumnIndexOrThrow(DBHelper.COLUMN_PRODUCT_PRICE));
+                String productDescription = cursor.getString(cursor.getColumnIndexOrThrow(DBHelper.COLUMN_PRODUCT_DESCRIPTION));
+                byte[] productImage = cursor.getBlob(cursor.getColumnIndexOrThrow(DBHelper.COLUMN_PRODUCT_IMAGE));
+                //String ownerId = cursor.getString(cursor.getColumnIndexOrThrow(DBHelper.COLUMN_OWNER_ID));
+                productModel = new ProductModel(productId, productName, productPrice, productDescription, productImage, productOwnerId);
+
+                returnList.add(productModel);
+
+            } while (cursor.moveToNext());
+        } else {
+
+        }
+
+        cursor.close();
+        db.close();
+
+        return returnList;
+    }
 }

@@ -65,6 +65,8 @@ public class MainActivity extends AppCompatActivity {
                 String loginMobileNumber = user_phone_number.getText().toString();
                 String loginPassword = til_userPassword.getEditText().getText().toString();
 
+                MyApplication.OwnerId = loginMobileNumber;
+
                 if (validatePhoneNumber(loginMobileNumber)) {
                     if (!loginMobileNumber.isEmpty() && !loginPassword.isEmpty()) {
                         //pbv

@@ -83,13 +83,7 @@ public class StoreFragment extends Fragment {
 
     private List<ProductModel> generateProductModel() {
         List<ProductModel> productModels = new ArrayList<>();
-        productModels.addAll(new DBHelper(this.getActivity()).getProducts());
-        /*productModels.add(new ProductModel(productId, "Special Erteb", 60.50, productDesciption, ownerId));
-        productModels.add(new ProductModel(productId, "Fasting Erteb", 35.00, productDesciption, ownerId));
-        productModels.add(new ProductModel(productId, "Normal Erteb", 40.50, productDesciption, ownerId));
-        productModels.add(new ProductModel(productId, "Erteb with Ketchup", 45.50, productDesciption, ownerId));
-        productModels.add(new ProductModel(productId, "Erteb without Felafillllllllllllll", 50.50, productDesciption, ownerId));
-*/
+        productModels.addAll(new DBHelper(this.getActivity()).getOwnerProduct(new MyApplication().getOwnerId()));
         return productModels;
     }
 
