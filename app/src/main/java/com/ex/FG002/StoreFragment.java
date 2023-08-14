@@ -1,8 +1,13 @@
 package com.ex.FG002;
 
+import android.content.ContentResolver;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.net.ConnectivityManager;
+import android.net.Uri;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -11,8 +16,18 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.MimeTypeMap;
+import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.OnProgressListener;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +37,9 @@ import java.util.List;
 
 public class StoreFragment extends Fragment {
 
-
+    NetworkChangeListener networkChangeListener = new NetworkChangeListener();
+    StorageReference storageReference = FirebaseStorage.getInstance().getReference("products");
+    DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("products/" + new MyApplication().getOwnerId());
     private FloatingActionButton fab_createProduct;
     //add fab_createProduct = getActivity().findViewById(R.id.fab_createProduct);
 
@@ -86,5 +103,74 @@ public class StoreFragment extends Fragment {
         productModels.addAll(new DBHelper(this.getActivity()).getOwnerProduct(new MyApplication().getOwnerId()));
         return productModels;
     }
+    @Override
+    public void onStart() {
+        IntentFilter intentFilter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
+        getContext().registerReceiver(networkChangeListener, intentFilter);
+        super.onStart();
+        if (NetworkChangeListener.syncStatus) {
+            uploadUnsyncedProductsToFirebase();
+        }
+    }
+    private void uploadUnsyncedProductsToFirebase() {
+        DBHelper dbHelper = new DBHelper(getActivity());
+        List<ProductModel> unsyncedProducts = dbHelper.getUnsyncedProducts();
+        for (ProductModel productModel : unsyncedProducts) {
+            // Upload the product to Firebase using Firebase SDK
+            // After successful upload, update the sync status to true
+            String firebaseId = "generated_firebase_id"; // Generate a unique ID or use Firebase's auto-generated ID
+            productModel.setSyncStatus(true);
+            // Call the uploadProduct method to upload the product and update the sync status
+            uploadProduct(productModel);
+        }
+    }
+    @Override
+    public void onStop() {
+        getContext().unregisterReceiver(networkChangeListener);
+        super.onStop();
+    }
+    private String getFileExtension(Uri uri) {
+        ContentResolver contentResolver = getActivity().getContentResolver();
+        MimeTypeMap mimeTypeMap = MimeTypeMap.getSingleton();
+        return mimeTypeMap.getExtensionFromMimeType(contentResolver.getType(uri));
+    }
+    private void uploadProduct(ProductModel productModel) {
+            StorageReference fileReference = storageReference.child(new MyApplication().getOwnerId() + "T" + productModel.getProductId() + "." + getFileExtension(Uri.parse(productModel.getProductImage())));
+            fileReference.putFile(Uri.parse(productModel.getProductImage()))
+                    .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                        @Override
+                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                            /*Handler handler = new Handler();
+                            handler.postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    //progressBar.setProgress(0);
+                                }
+                            }, 500);*/
 
+                            fileReference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                @Override
+                                public void onSuccess(Uri uri) {
+                                    String productImageUrl = uri.toString();
+                                    Toast.makeText(getContext(), "Successfully uploaded product", Toast.LENGTH_SHORT).show();
+                                    ProductUpload productUpload = new ProductUpload(productModel.getProductId(), productModel.getProductName(),productModel.getProductPrice(), productModel.getProductDesciption(), productImageUrl, productModel.getOwnerId());
+                                    databaseReference.child(productModel.getProductId()).setValue(productUpload);
+                                }
+                            });
+                        }
+                    })
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Toast.makeText(getContext(), "Failed to upload product!", Toast.LENGTH_SHORT).show();
+                        }
+                    })
+                    .addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+                        @Override
+                        public void onProgress(@NonNull UploadTask.TaskSnapshot snapshot) {
+                            /*double progress = (100.0 * snapshot.getBytesTransferred() / snapshot.getTotalByteCount());
+                            progress.setProgress((int)progress);*/
+                        }
+                    });
+        }
 }

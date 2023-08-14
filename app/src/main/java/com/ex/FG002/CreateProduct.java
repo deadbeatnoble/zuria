@@ -7,6 +7,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
+import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -14,16 +15,26 @@ import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
+import android.webkit.MimeTypeMap;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputLayout;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.OnProgressListener;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 import com.squareup.picasso.Picasso;
 import com.theartofdev.edmodo.cropper.CropImage;
 
 import java.io.ByteArrayOutputStream;
+import java.util.UUID;
 
 public class CreateProduct extends AppCompatActivity {
 
@@ -39,6 +50,9 @@ public class CreateProduct extends AppCompatActivity {
     DBHelper dbHelper;
 
 
+    Uri imageUri;
+    StorageReference storageReference = FirebaseStorage.getInstance().getReference("products");
+    DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("products/" + new MyApplication().getOwnerId());
 
     public static final int CAMERA_REQUEST = 100;
     public static final int STORAGE_REQUEST = 101;
@@ -63,6 +77,12 @@ public class CreateProduct extends AppCompatActivity {
         btn_discardProduct = findViewById(R.id.btn_discardProduct);
 
         dbHelper = new DBHelper(CreateProduct.this);
+
+
+        storageReference = FirebaseStorage.getInstance().getReference("products");
+        databaseReference = FirebaseDatabase.getInstance().getReference("products/" + new MyApplication().getOwnerId());
+
+
         fab_imageFromGallery.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -91,8 +111,9 @@ public class CreateProduct extends AppCompatActivity {
                 if(til_productName.getEditText().getText().toString().isEmpty() || til_productPrice.getEditText().getText().toString().isEmpty() || til_productDescription.getEditText().getText().toString().isEmpty() || iv_productImage.getDrawable() == null) {
                     Toast.makeText(CreateProduct.this, "Please fill all fields and select an image", Toast.LENGTH_SHORT).show();
                 } else {
+                    String productId = generateProductId();
                     try {
-                        productModel = new ProductModel(1, til_productName.getEditText().getText().toString(), Double.parseDouble(til_productPrice.getEditText().getText().toString()), til_productDescription.getEditText().getText().toString(), imageToByteArray(iv_productImage), new MyApplication().getOwnerId());
+                        productModel = new ProductModel(productId, til_productName.getEditText().getText().toString(), Double.parseDouble(til_productPrice.getEditText().getText().toString()), til_productDescription.getEditText().getText().toString(), imageUri.toString(), new MyApplication().getOwnerId(), NetworkChangeListener.syncStatus);
                         Toast.makeText(CreateProduct.this, productModel.toString(), Toast.LENGTH_SHORT).show();
                     } catch (Exception e) {
                         Toast.makeText(CreateProduct.this, "Failed to Add", Toast.LENGTH_SHORT).show();
@@ -107,11 +128,70 @@ public class CreateProduct extends AppCompatActivity {
                         Toast.makeText(CreateProduct.this, "Failed to Add", Toast.LENGTH_SHORT).show();
                     }
 
+                    //check if online the to firebase uploading starts
+                    //uploadProduct(prodcutId);
 
                     startActivity(new Intent(CreateProduct.this, shopOwnerPOV.class));
                 }
             }
         });
+    }
+
+    private String getFileExtension(Uri uri) {
+        ContentResolver contentResolver = getContentResolver();
+        MimeTypeMap mimeTypeMap = MimeTypeMap.getSingleton();
+        return mimeTypeMap.getExtensionFromMimeType(contentResolver.getType(uri));
+    }
+    private void uploadProduct(String productId) {
+        if (imageUri == null) {
+            Toast.makeText(this, "No image selected", Toast.LENGTH_SHORT).show();
+        } else {
+
+
+
+            StorageReference fileReference = storageReference.child(new MyApplication().getOwnerId() + "T" + productId + "." + getFileExtension(imageUri));
+            fileReference.putFile(imageUri)
+                    .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                        @Override
+                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                            /*Handler handler = new Handler();
+                            handler.postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    //progressBar.setProgress(0);
+                                }
+                            }, 500);*/
+
+                            fileReference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                @Override
+                                public void onSuccess(Uri uri) {
+                                    String productImageUrl = uri.toString();
+                                    String productId = generateProductId();
+                                    Toast.makeText(CreateProduct.this, "Successfully uploaded product", Toast.LENGTH_SHORT).show();
+                                    ProductUpload productUpload = new ProductUpload(productId, til_productName.getEditText().getText().toString(), Double.parseDouble(til_productPrice.getEditText().getText().toString()), til_productDescription.getEditText().getText().toString(), productImageUrl, new MyApplication().getOwnerId());
+                                    databaseReference.child(productId).setValue(productUpload);
+                                }
+                            });
+                        }
+                    })
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Toast.makeText(CreateProduct.this, "Failed to upload product!", Toast.LENGTH_SHORT).show();
+                        }
+                    })
+                    .addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+                        @Override
+                        public void onProgress(@NonNull UploadTask.TaskSnapshot snapshot) {
+                            /*double progress = (100.0 * snapshot.getBytesTransferred() / snapshot.getTotalByteCount());
+                            progress.setProgress((int)progress);*/
+                        }
+                    });
+        }
+    }
+
+    private String generateProductId() {
+        return UUID.randomUUID().toString();
     }
 
     private byte[] imageToByteArray(ImageView iv_productImage) {
@@ -183,8 +263,8 @@ public class CreateProduct extends AppCompatActivity {
         if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
             CropImage.ActivityResult result = CropImage.getActivityResult(data);
             if (resultCode == RESULT_OK) {
-                Uri resultUri = result.getUri();
-                Picasso.get().load(resultUri).into(iv_productImage);
+                imageUri = result.getUri();
+                Picasso.get().load(imageUri).into(iv_productImage);
             }
         }
     }

@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +17,7 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.divider.MaterialDivider;
+import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
@@ -45,8 +47,10 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
         holder.tv_productPrice.setText(String.valueOf(productModel.getProductPrice()));
         holder.tv_productDescription.setText(productModel.getProductDesciption());
 
-        Bitmap imageBitmap = BitmapFactory.decodeByteArray(productModel.getProductImage(), 0, productModel.getProductImage().length);
-        holder.iv_productImage.setImageBitmap(imageBitmap);
+        //Bitmap imageBitmap = BitmapFactory.decodeByteArray(productModel.getProductImage(), 0, productModel.getProductImage().length);
+        //holder.iv_productImage.setImageBitmap(imageBitmap);
+
+        Picasso.get().load(Uri.parse(productModel.getProductImage())).into(holder.iv_productImage);
 
 
         Boolean isExpanded = productList.get(position).isExpanded();
@@ -57,7 +61,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
         holder.acb_editProduct.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                int productId = productList.get(position).getProductId();
+                String productId = productList.get(position).getProductId();
                 Intent intent = new Intent(context, UpdateProduct.class);
                 intent.putExtra("PRODUCT_ID", productId);
                 context.startActivity(intent);

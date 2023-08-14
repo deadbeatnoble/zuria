@@ -1,35 +1,25 @@
 package com.ex.FG002;
 
-import java.io.Serializable;
-
-public class ProductModel implements Serializable {
+public class ProductUpload {
     private String ProductId;
     private String productName;
     private double productPrice;
     private String productDesciption;
     private String productImage;
     private String ownerId;
-    private Boolean syncStatus;
+    //private Boolean expanded;
 
-    private Boolean expanded;
 
-    public Boolean isExpanded() {
-        return expanded;
+    public ProductUpload() {
     }
 
-    public void setExpanded(Boolean expanded) {
-        this.expanded = expanded;
-    }
-
-    public ProductModel(String productId, String productName, double productPrice, String productDesciption, String productImage, String ownerId, Boolean syncStatus) {
+    public ProductUpload(String productId, String productName, double productPrice, String productDesciption, String productImage, String ownerId) {
         ProductId = productId;
         this.productName = productName;
         this.productPrice = productPrice;
         this.productDesciption = productDesciption;
         this.productImage = productImage;
         this.ownerId = ownerId;
-        this.syncStatus = syncStatus;
-        this.expanded = false;
     }
 
     public String getProductId() {
@@ -52,7 +42,7 @@ public class ProductModel implements Serializable {
         return productPrice;
     }
 
-    public void setProductPrice(int productPrice) {
+    public void setProductPrice(double productPrice) {
         this.productPrice = productPrice;
     }
 
@@ -78,13 +68,5 @@ public class ProductModel implements Serializable {
 
     public void setOwnerId(String ownerId) {
         this.ownerId = ownerId;
-    }
-
-    public Boolean getSyncStatus() {
-        return syncStatus;
-    }
-
-    public void setSyncStatus(Boolean syncStatus) {
-        this.syncStatus = syncStatus;
     }
 }

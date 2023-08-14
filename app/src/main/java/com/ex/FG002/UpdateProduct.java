@@ -10,7 +10,6 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
@@ -36,7 +35,8 @@ public class UpdateProduct extends AppCompatActivity {
     private FloatingActionButton fab_imageFromGallery;
 
 
-    int productId;
+    String productId;
+    Uri imageUri;
 
 
     public static final int CAMERA_REQUEST = 100;
@@ -60,7 +60,7 @@ public class UpdateProduct extends AppCompatActivity {
         fab_imageFromGallery = findViewById(R.id.fab_imageFromGallery);
 
         // Initialize the productId class variable with the value of the PRODUCT_ID extra
-        productId = getIntent().getIntExtra("PRODUCT_ID", -1);
+        productId = getIntent().getStringExtra("PRODUCT_ID");
 
         DBHelper dbHelper = new DBHelper(this);
         ProductModel productModel = dbHelper.getProductById(productId);
@@ -70,8 +70,12 @@ public class UpdateProduct extends AppCompatActivity {
             til_productPrice.getEditText().setText(String.valueOf(productModel.getProductPrice()));
             til_productDescription.getEditText().setText(productModel.getProductDesciption());
 
-            Bitmap imageBitmap = BitmapFactory.decodeByteArray(productModel.getProductImage(), 0, productModel.getProductImage().length);
-            iv_productImageUP.setImageBitmap(imageBitmap);
+            //Bitmap imageBitmap = BitmapFactory.decodeByteArray(productModel.getProductImage(), 0, productModel.getProductImage().length);
+            //iv_productImageUP.setImageBitmap(imageBitmap);
+
+            Picasso.get().load(imageUri).into(iv_productImageUP);
+
+
         } else {
             Toast.makeText(this, "Product not found", Toast.LENGTH_SHORT).show();
             finish();
@@ -108,9 +112,9 @@ public class UpdateProduct extends AppCompatActivity {
         String productName = til_productName.getEditText().getText().toString();
         String productPrice = til_productPrice.getEditText().getText().toString();
         String productDescription = til_productDescription.getEditText().getText().toString();
-        byte[] productImage = imageToByteArray(iv_productImageUP);
+        String productImage = imageUri.toString();
 
-        ProductModel productModel = new ProductModel(productId, productName, Double.parseDouble(productPrice), productDescription, productImage, new MyApplication().getOwnerId());
+        ProductModel productModel = new ProductModel(productId, productName, Double.parseDouble(productPrice), productDescription, productImage, new MyApplication().getOwnerId(), NetworkChangeListener.syncStatus);
 
         DBHelper dbHelper = new DBHelper(this);
 
@@ -189,8 +193,8 @@ public class UpdateProduct extends AppCompatActivity {
         if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
             CropImage.ActivityResult result = CropImage.getActivityResult(data);
             if (resultCode == RESULT_OK) {
-                Uri resultUri = result.getUri();
-                Picasso.get().load(resultUri).into(iv_productImageUP);
+                imageUri = result.getUri();
+                Picasso.get().load(imageUri).into(iv_productImageUP);
             }
         }
     }
