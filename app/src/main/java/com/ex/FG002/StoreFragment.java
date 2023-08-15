@@ -118,10 +118,13 @@ public class StoreFragment extends Fragment {
         for (ProductModel productModel : unsyncedProducts) {
             // Upload the product to Firebase using Firebase SDK
             // After successful upload, update the sync status to true
-            String firebaseId = "generated_firebase_id"; // Generate a unique ID or use Firebase's auto-generated ID
-            productModel.setSyncStatus(true);
-            // Call the uploadProduct method to upload the product and update the sync status
-            uploadProduct(productModel);
+            //String firebaseId = "generated_firebase_id"; // Generate a unique ID or use Firebase's auto-generated ID
+            //productModel.setSyncStatus(true);
+            if (uploadProduct(productModel)) {
+                dbHelper.updateProductSyncStatus(productModel.getProductId(), true);
+            } else {
+                dbHelper.updateProductSyncStatus(productModel.getProductId(), false);
+            }
         }
     }
     @Override
@@ -134,43 +137,47 @@ public class StoreFragment extends Fragment {
         MimeTypeMap mimeTypeMap = MimeTypeMap.getSingleton();
         return mimeTypeMap.getExtensionFromMimeType(contentResolver.getType(uri));
     }
-    private void uploadProduct(ProductModel productModel) {
-            StorageReference fileReference = storageReference.child(new MyApplication().getOwnerId() + "T" + productModel.getProductId() + "." + getFileExtension(Uri.parse(productModel.getProductImage())));
-            fileReference.putFile(Uri.parse(productModel.getProductImage()))
-                    .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                        @Override
-                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                            /*Handler handler = new Handler();
-                            handler.postDelayed(new Runnable() {
-                                @Override
-                                public void run() {
-                                    //progressBar.setProgress(0);
-                                }
-                            }, 500);*/
+    private boolean uploadProduct(ProductModel productModel) {
+        boolean[] uploadStatus = {false};
+        StorageReference fileReference = storageReference.child(new MyApplication().getOwnerId() + "T" + productModel.getProductId() + "." + getFileExtension(Uri.parse(productModel.getProductImage())));
+        fileReference.putFile(Uri.parse(productModel.getProductImage()))
+                .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        /*Handler handler = new Handler();
+                        handler.postDelayed(new Runnable() {
+                               @Override
+                               public void run() {
+                                  //progressBar.setProgress(0);
+                              }
+                           }, 500);*/
 
-                            fileReference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                                @Override
-                                public void onSuccess(Uri uri) {
-                                    String productImageUrl = uri.toString();
-                                    Toast.makeText(getContext(), "Successfully uploaded product", Toast.LENGTH_SHORT).show();
-                                    ProductUpload productUpload = new ProductUpload(productModel.getProductId(), productModel.getProductName(),productModel.getProductPrice(), productModel.getProductDesciption(), productImageUrl, productModel.getOwnerId());
-                                    databaseReference.child(productModel.getProductId()).setValue(productUpload);
-                                }
-                            });
-                        }
-                    })
-                    .addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            Toast.makeText(getContext(), "Failed to upload product!", Toast.LENGTH_SHORT).show();
-                        }
-                    })
-                    .addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
-                        @Override
-                        public void onProgress(@NonNull UploadTask.TaskSnapshot snapshot) {
-                            /*double progress = (100.0 * snapshot.getBytesTransferred() / snapshot.getTotalByteCount());
-                            progress.setProgress((int)progress);*/
-                        }
-                    });
+                        fileReference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                            @Override
+                            public void onSuccess(Uri uri) {
+                                String productImageUrl = uri.toString();
+                                Toast.makeText(getContext(), "Successfully uploaded product", Toast.LENGTH_SHORT).show();
+                                ProductUpload productUpload = new ProductUpload(productModel.getProductId(), productModel.getProductName(),productModel.getProductPrice(), productModel.getProductDesciption(), productImageUrl, productModel.getOwnerId());
+                                databaseReference.child(productModel.getProductId()).setValue(productUpload);
+                                uploadStatus[0] = true;
+                            }
+                        });
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Toast.makeText(getContext(), "Failed to upload product!", Toast.LENGTH_SHORT).show();
+                        uploadStatus[0] = false;
+                    }
+                })
+                .addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onProgress(@NonNull UploadTask.TaskSnapshot snapshot) {
+                        /*double progress = (100.0 * snapshot.getBytesTransferred() / snapshot.getTotalByteCount());
+                           progress.setProgress((int)progress);*/
+                    }
+                });
+            return uploadStatus[0];
         }
 }

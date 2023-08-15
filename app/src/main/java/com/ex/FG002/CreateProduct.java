@@ -119,13 +119,18 @@ public class CreateProduct extends AppCompatActivity {
                         Toast.makeText(CreateProduct.this, "Failed to Add", Toast.LENGTH_SHORT).show();
                     }
 
-                    DBHelper databaseHelper = new DBHelper(CreateProduct.this);
-                    Boolean success = databaseHelper.addProduct(productModel);
+                    Boolean success = dbHelper.addProduct(productModel);
 
                     if (success) {
-                        Toast.makeText(CreateProduct.this, "Product Added", Toast.LENGTH_SHORT).show();
+                        if (NetworkChangeListener.syncStatus == true) {
+                            //internet available
+                            uploadProduct(productModel);
+                        } else {
+                            dbHelper.updateProductSyncStatus(productId,false);
+                        }
+                        //Toast.makeText(CreateProduct.this, "Product Created locally", Toast.LENGTH_SHORT).show();
                     } else {
-                        Toast.makeText(CreateProduct.this, "Failed to Add", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(CreateProduct.this, "Failed to create product", Toast.LENGTH_SHORT).show();
                     }
 
                     //check if online the to firebase uploading starts
@@ -142,15 +147,12 @@ public class CreateProduct extends AppCompatActivity {
         MimeTypeMap mimeTypeMap = MimeTypeMap.getSingleton();
         return mimeTypeMap.getExtensionFromMimeType(contentResolver.getType(uri));
     }
-    private void uploadProduct(String productId) {
-        if (imageUri == null) {
+    private void uploadProduct(ProductModel productModel) {
+        if (productModel.getProductImage() == null) {
             Toast.makeText(this, "No image selected", Toast.LENGTH_SHORT).show();
         } else {
-
-
-
-            StorageReference fileReference = storageReference.child(new MyApplication().getOwnerId() + "T" + productId + "." + getFileExtension(imageUri));
-            fileReference.putFile(imageUri)
+            StorageReference fileReference = storageReference.child(new MyApplication().getOwnerId() + "T" + productModel.getProductId() + "." + getFileExtension(Uri.parse(productModel.getProductImage())));
+            fileReference.putFile(Uri.parse(productModel.getProductImage()))
                     .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                         @Override
                         public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
@@ -166,10 +168,11 @@ public class CreateProduct extends AppCompatActivity {
                                 @Override
                                 public void onSuccess(Uri uri) {
                                     String productImageUrl = uri.toString();
-                                    String productId = generateProductId();
                                     Toast.makeText(CreateProduct.this, "Successfully uploaded product", Toast.LENGTH_SHORT).show();
-                                    ProductUpload productUpload = new ProductUpload(productId, til_productName.getEditText().getText().toString(), Double.parseDouble(til_productPrice.getEditText().getText().toString()), til_productDescription.getEditText().getText().toString(), productImageUrl, new MyApplication().getOwnerId());
-                                    databaseReference.child(productId).setValue(productUpload);
+                                    ProductUpload productUpload = new ProductUpload(productModel.getProductId(), productModel.getProductName(), productModel.getProductPrice(), productModel.getProductDesciption(), productImageUrl, productModel.getOwnerId());
+                                    databaseReference.child(productModel.getProductId()).setValue(productUpload);
+
+                                    dbHelper.updateProductSyncStatus(productModel.getProductId(), true);
                                 }
                             });
                         }
@@ -177,6 +180,7 @@ public class CreateProduct extends AppCompatActivity {
                     .addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception e) {
+                            dbHelper.updateProductSyncStatus(productModel.getProductId(), false);
                             Toast.makeText(CreateProduct.this, "Failed to upload product!", Toast.LENGTH_SHORT).show();
                         }
                     })

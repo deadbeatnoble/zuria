@@ -307,4 +307,24 @@ public class DBHelper extends SQLiteOpenHelper {
 
         return unsyncedProducts;
     }
+    public boolean updateProductSyncStatus(String producId, boolean syncStatus) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues cv = new ContentValues();
+
+
+        /*cv.put(COLUMN_PRODUCT_NAME, productModel.getProductName());
+        cv.put(COLUMN_PRODUCT_PRICE, productModel.getProductPrice());
+        cv.put(COLUMN_PRODUCT_DESCRIPTION, productModel.getProductDesciption());
+        cv.put(COLUMN_PRODUCT_IMAGE, productModel.getProductImage());
+        cv.put(COLUMN_OWNER_ID, productModel.getOwnerId());*/
+        cv.put(COLUMN_SYNC_STATUS, syncStatus ? 1 : 0);
+
+
+        long insert = db.update(PRODUCT_TABLE, cv, "id=?", new String[]{String.valueOf(producId)});
+        if (insert == -1) {
+            return false;
+        } else {
+            return true;
+        }
+    }
 }
