@@ -7,19 +7,21 @@ public class ProductUpload {
     private String productDesciption;
     private String productImage;
     private String ownerId;
+    private boolean productStatus;
     //private Boolean expanded;
 
 
     public ProductUpload() {
     }
 
-    public ProductUpload(String productId, String productName, double productPrice, String productDesciption, String productImage, String ownerId) {
+    public ProductUpload(String productId, String productName, double productPrice, String productDesciption, String productImage, String ownerId, boolean productStatus) {
         ProductId = productId;
         this.productName = productName;
         this.productPrice = productPrice;
         this.productDesciption = productDesciption;
         this.productImage = productImage;
         this.ownerId = ownerId;
+        this.productStatus = productStatus;
     }
 
     public String getProductId() {
@@ -68,5 +70,13 @@ public class ProductUpload {
 
     public void setOwnerId(String ownerId) {
         this.ownerId = ownerId;
+    }
+
+    public boolean getProductStatus() {
+        return productStatus;
+    }
+
+    public void setProductStatus(boolean productStatus) {
+        this.productStatus = productStatus;
     }
 }

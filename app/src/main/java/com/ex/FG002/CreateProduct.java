@@ -113,7 +113,7 @@ public class CreateProduct extends AppCompatActivity {
                 } else {
                     String productId = generateProductId();
                     try {
-                        productModel = new ProductModel(productId, til_productName.getEditText().getText().toString(), Double.parseDouble(til_productPrice.getEditText().getText().toString()), til_productDescription.getEditText().getText().toString(), imageUri.toString(), new MyApplication().getOwnerId(), NetworkChangeListener.syncStatus);
+                        productModel = new ProductModel(productId, til_productName.getEditText().getText().toString(), Double.parseDouble(til_productPrice.getEditText().getText().toString()), til_productDescription.getEditText().getText().toString(), imageUri.toString(), new MyApplication().getOwnerId(), NetworkChangeListener.syncStatus, false);
                         Toast.makeText(CreateProduct.this, productModel.toString(), Toast.LENGTH_SHORT).show();
                     } catch (Exception e) {
                         Toast.makeText(CreateProduct.this, "Failed to Add", Toast.LENGTH_SHORT).show();
@@ -169,7 +169,7 @@ public class CreateProduct extends AppCompatActivity {
                                 public void onSuccess(Uri uri) {
                                     String productImageUrl = uri.toString();
                                     Toast.makeText(CreateProduct.this, "Successfully uploaded product", Toast.LENGTH_SHORT).show();
-                                    ProductUpload productUpload = new ProductUpload(productModel.getProductId(), productModel.getProductName(), productModel.getProductPrice(), productModel.getProductDesciption(), productImageUrl, productModel.getOwnerId());
+                                    ProductUpload productUpload = new ProductUpload(productModel.getProductId(), productModel.getProductName(), productModel.getProductPrice(), productModel.getProductDesciption(), productImageUrl, productModel.getOwnerId(), productModel.getProductStatus());
                                     databaseReference.child(productModel.getProductId()).setValue(productUpload);
 
                                     dbHelper.updateProductSyncStatus(productModel.getProductId(), true);

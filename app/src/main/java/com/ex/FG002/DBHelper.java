@@ -23,6 +23,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String COLUMN_ID = "ID";
     private static final String COLUMN_OWNER_ID = "OID";
     private static final String COLUMN_SYNC_STATUS = "SYNC";
+    private static final String COLUMN_PRODUCT_STATUS = "PRODUCT_STATUS";
 
     public DBHelper(@Nullable Context context) {
         super(context, "createdproducts.db", null, 2);
@@ -37,7 +38,8 @@ public class DBHelper extends SQLiteOpenHelper {
                 + COLUMN_PRODUCT_DESCRIPTION + " TEXT, "
                 + COLUMN_PRODUCT_IMAGE + " TEXT, "
                 + COLUMN_OWNER_ID + " TEXT, "
-                + COLUMN_SYNC_STATUS + " INTEGER)";
+                + COLUMN_SYNC_STATUS + " INTEGER, "
+                + COLUMN_PRODUCT_STATUS + " INTEGER)";
 
         db.execSQL(createTableStatement);
     }
@@ -64,6 +66,7 @@ public class DBHelper extends SQLiteOpenHelper {
         values.put(COLUMN_PRODUCT_IMAGE, productModel.getProductImage());
         values.put(COLUMN_OWNER_ID, productModel.getOwnerId());
         values.put(COLUMN_SYNC_STATUS, productModel.getSyncStatus());
+        values.put(COLUMN_PRODUCT_STATUS, productModel.getProductStatus());
 
         db.insert(PRODUCT_TABLE, null, values);
         db.close();
@@ -110,7 +113,13 @@ public class DBHelper extends SQLiteOpenHelper {
                 } else {
                     syncStatus = false;
                 }
-                ProductModel productModel = new ProductModel(productId,productName,productPrice,productDescription,productImage,ownerId, syncStatus);
+                boolean productStatus;
+                if (cursor.getInt(7) == 1) {
+                    productStatus = true;
+                } else {
+                    productStatus = false;
+                }
+                ProductModel productModel = new ProductModel(productId,productName,productPrice,productDescription,productImage,ownerId, syncStatus, productStatus);
                 returnList.add(productModel);
 
             } while(cursor.moveToNext());
@@ -133,6 +142,7 @@ public class DBHelper extends SQLiteOpenHelper {
         cv.put(COLUMN_PRODUCT_IMAGE, productModel.getProductImage());
         cv.put(COLUMN_OWNER_ID, productModel.getOwnerId());
         cv.put(COLUMN_SYNC_STATUS, productModel.getSyncStatus());
+        cv.put(COLUMN_PRODUCT_STATUS, productModel.getProductStatus());
 
 
         long insert = db.update(PRODUCT_TABLE, cv, "id=?", new String[]{String.valueOf(productModel.getProductId())});
@@ -153,7 +163,8 @@ public class DBHelper extends SQLiteOpenHelper {
                 DBHelper.COLUMN_PRODUCT_DESCRIPTION,
                 DBHelper.COLUMN_PRODUCT_IMAGE,
                 DBHelper.COLUMN_OWNER_ID,
-                DBHelper.COLUMN_SYNC_STATUS
+                DBHelper.COLUMN_SYNC_STATUS,
+                DBHelper.COLUMN_PRODUCT_STATUS
         };
 
         String selection = DBHelper.COLUMN_ID + " = ?";
@@ -183,7 +194,13 @@ public class DBHelper extends SQLiteOpenHelper {
             }else {
                 syncStatus = false;
             }
-            productModel = new ProductModel(productId, productName, productPrice, productDescription, productImage, ownerId, syncStatus);
+            boolean productStatus;
+            if (cursor.getInt(cursor.getColumnIndexOrThrow(DBHelper.COLUMN_PRODUCT_STATUS)) == 1) {
+                productStatus = true;
+            }else {
+                productStatus = false;
+            }
+            productModel = new ProductModel(productId, productName, productPrice, productDescription, productImage, ownerId, syncStatus, productStatus);
         }
 
         cursor.close();
@@ -203,7 +220,8 @@ public class DBHelper extends SQLiteOpenHelper {
                 DBHelper.COLUMN_PRODUCT_DESCRIPTION,
                 DBHelper.COLUMN_PRODUCT_IMAGE,
                 DBHelper.COLUMN_OWNER_ID,
-                DBHelper.COLUMN_SYNC_STATUS
+                DBHelper.COLUMN_SYNC_STATUS,
+                DBHelper.COLUMN_PRODUCT_STATUS
         };
 
         String selection = DBHelper.COLUMN_OWNER_ID + " = ?";
@@ -235,7 +253,13 @@ public class DBHelper extends SQLiteOpenHelper {
                 }else {
                     syncStatus = false;
                 }
-                productModel = new ProductModel(productId, productName, productPrice, productDescription, productImage, productOwnerId, syncStatus);
+                boolean productStatus;
+                if (cursor.getInt(cursor.getColumnIndexOrThrow(DBHelper.COLUMN_PRODUCT_STATUS)) == 1) {
+                    productStatus = true;
+                }else {
+                    productStatus = false;
+                }
+                productModel = new ProductModel(productId, productName, productPrice, productDescription, productImage, productOwnerId, syncStatus, productStatus);
 
                 returnList.add(productModel);
 
@@ -261,7 +285,8 @@ public class DBHelper extends SQLiteOpenHelper {
                 DBHelper.COLUMN_PRODUCT_DESCRIPTION,
                 DBHelper.COLUMN_PRODUCT_IMAGE,
                 DBHelper.COLUMN_OWNER_ID,
-                DBHelper.COLUMN_SYNC_STATUS
+                DBHelper.COLUMN_SYNC_STATUS,
+                DBHelper.COLUMN_PRODUCT_STATUS
         };
 
         String selection = DBHelper.COLUMN_SYNC_STATUS + " = ?";
@@ -293,7 +318,13 @@ public class DBHelper extends SQLiteOpenHelper {
                 }else {
                     syncStatus = false;
                 }
-                productModel = new ProductModel(productId, productName, productPrice, productDescription, productImage, productOwnerId, syncStatus);
+                boolean productStatus;
+                if (cursor.getInt(cursor.getColumnIndexOrThrow(DBHelper.COLUMN_PRODUCT_STATUS)) == 1) {
+                    productStatus = true;
+                }else {
+                    productStatus = false;
+                }
+                productModel = new ProductModel(productId, productName, productPrice, productDescription, productImage, productOwnerId, syncStatus, productStatus);
 
                 unsyncedProducts.add(productModel);
 
@@ -321,6 +352,27 @@ public class DBHelper extends SQLiteOpenHelper {
 
 
         long insert = db.update(PRODUCT_TABLE, cv, "id=?", new String[]{String.valueOf(producId)});
+        if (insert == -1) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    public boolean updateSwitchState(String productId, boolean isChecked) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues cv = new ContentValues();
+
+
+        /*cv.put(COLUMN_PRODUCT_NAME, productModel.getProductName());
+        cv.put(COLUMN_PRODUCT_PRICE, productModel.getProductPrice());
+        cv.put(COLUMN_PRODUCT_DESCRIPTION, productModel.getProductDesciption());
+        cv.put(COLUMN_PRODUCT_IMAGE, productModel.getProductImage());
+        cv.put(COLUMN_OWNER_ID, productModel.getOwnerId());*/
+        cv.put(COLUMN_PRODUCT_STATUS, isChecked ? 1 : 0);
+
+
+        long insert = db.update(PRODUCT_TABLE, cv, "id=?", new String[]{String.valueOf(productId)});
         if (insert == -1) {
             return false;
         } else {

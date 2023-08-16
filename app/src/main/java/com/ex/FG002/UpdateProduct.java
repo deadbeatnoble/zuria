@@ -114,7 +114,7 @@ public class UpdateProduct extends AppCompatActivity {
         String productDescription = til_productDescription.getEditText().getText().toString();
         String productImage = imageUri.toString();
 
-        ProductModel productModel = new ProductModel(productId, productName, Double.parseDouble(productPrice), productDescription, productImage, new MyApplication().getOwnerId(), NetworkChangeListener.syncStatus);
+        ProductModel productModel = new ProductModel(productId, productName, Double.parseDouble(productPrice), productDescription, productImage, new MyApplication().getOwnerId(), NetworkChangeListener.syncStatus, false);
 
         DBHelper dbHelper = new DBHelper(this);
 

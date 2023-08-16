@@ -10,6 +10,7 @@ public class ProductModel implements Serializable {
     private String productImage;
     private String ownerId;
     private Boolean syncStatus;
+    private Boolean productStatus;
 
     private Boolean expanded;
 
@@ -21,7 +22,7 @@ public class ProductModel implements Serializable {
         this.expanded = expanded;
     }
 
-    public ProductModel(String productId, String productName, double productPrice, String productDesciption, String productImage, String ownerId, Boolean syncStatus) {
+    public ProductModel(String productId, String productName, double productPrice, String productDesciption, String productImage, String ownerId, Boolean syncStatus, Boolean productStatus) {
         ProductId = productId;
         this.productName = productName;
         this.productPrice = productPrice;
@@ -29,7 +30,16 @@ public class ProductModel implements Serializable {
         this.productImage = productImage;
         this.ownerId = ownerId;
         this.syncStatus = syncStatus;
+        this.productStatus = productStatus;
         this.expanded = false;
+    }
+
+    public Boolean getProductStatus() {
+        return productStatus;
+    }
+
+    public void setProductStatus(Boolean productStatus) {
+        this.productStatus = productStatus;
     }
 
     public String getProductId() {

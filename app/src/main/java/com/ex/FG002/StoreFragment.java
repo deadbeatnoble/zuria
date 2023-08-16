@@ -39,7 +39,7 @@ public class StoreFragment extends Fragment {
 
     NetworkChangeListener networkChangeListener = new NetworkChangeListener();
     StorageReference storageReference = FirebaseStorage.getInstance().getReference("products");
-    DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("products/" + new MyApplication().getOwnerId());
+    DatabaseReference databaseReference;
     private FloatingActionButton fab_createProduct;
     //add fab_createProduct = getActivity().findViewById(R.id.fab_createProduct);
 
@@ -139,7 +139,7 @@ public class StoreFragment extends Fragment {
     }
     private boolean uploadProduct(ProductModel productModel) {
         boolean[] uploadStatus = {false};
-        StorageReference fileReference = storageReference.child(new MyApplication().getOwnerId() + "T" + productModel.getProductId() + "." + getFileExtension(Uri.parse(productModel.getProductImage())));
+        StorageReference fileReference = storageReference.child(productModel.getOwnerId() + "T" + productModel.getProductId() + "." + getFileExtension(Uri.parse(productModel.getProductImage())));
         fileReference.putFile(Uri.parse(productModel.getProductImage()))
                 .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                     @Override
@@ -155,9 +155,10 @@ public class StoreFragment extends Fragment {
                         fileReference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
                             @Override
                             public void onSuccess(Uri uri) {
+                                databaseReference = FirebaseDatabase.getInstance().getReference("products/" + productModel.getOwnerId());
                                 String productImageUrl = uri.toString();
-                                Toast.makeText(getContext(), "Successfully uploaded product", Toast.LENGTH_SHORT).show();
-                                ProductUpload productUpload = new ProductUpload(productModel.getProductId(), productModel.getProductName(),productModel.getProductPrice(), productModel.getProductDesciption(), productImageUrl, productModel.getOwnerId());
+                                Toast.makeText(getActivity(), "Successfully uploaded product", Toast.LENGTH_SHORT).show();
+                                ProductUpload productUpload = new ProductUpload(productModel.getProductId(), productModel.getProductName(),productModel.getProductPrice(), productModel.getProductDesciption(), productImageUrl, productModel.getOwnerId(), productModel.getProductStatus());
                                 databaseReference.child(productModel.getProductId()).setValue(productUpload);
                                 uploadStatus[0] = true;
                             }
@@ -167,7 +168,7 @@ public class StoreFragment extends Fragment {
                 .addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
-                        Toast.makeText(getContext(), "Failed to upload product!", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getActivity(), "Failed to upload product!", Toast.LENGTH_SHORT).show();
                         uploadStatus[0] = false;
                     }
                 })
