@@ -113,7 +113,7 @@ public class CreateProduct extends AppCompatActivity {
                 } else {
                     String productId = generateProductId();
                     try {
-                        productModel = new ProductModel(productId, til_productName.getEditText().getText().toString(), Double.parseDouble(til_productPrice.getEditText().getText().toString()), til_productDescription.getEditText().getText().toString(), imageUri.toString(), new MyApplication().getOwnerId(), NetworkChangeListener.syncStatus, false);
+                        productModel = new ProductModel(productId, til_productName.getEditText().getText().toString(), Double.parseDouble(til_productPrice.getEditText().getText().toString()), til_productDescription.getEditText().getText().toString(), imageUri.toString(), new MyApplication().getOwnerId(), NetworkChangeListener.syncStatus, false, false);
                         Toast.makeText(CreateProduct.this, productModel.toString(), Toast.LENGTH_SHORT).show();
                     } catch (Exception e) {
                         Toast.makeText(CreateProduct.this, "Failed to Add", Toast.LENGTH_SHORT).show();

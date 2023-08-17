@@ -11,6 +11,7 @@ public class ProductModel implements Serializable {
     private String ownerId;
     private Boolean syncStatus;
     private Boolean productStatus;
+    private Boolean isDeleted;
 
     private Boolean expanded;
 
@@ -22,7 +23,7 @@ public class ProductModel implements Serializable {
         this.expanded = expanded;
     }
 
-    public ProductModel(String productId, String productName, double productPrice, String productDesciption, String productImage, String ownerId, Boolean syncStatus, Boolean productStatus) {
+    public ProductModel(String productId, String productName, double productPrice, String productDesciption, String productImage, String ownerId, Boolean syncStatus, Boolean productStatus, Boolean isDeleted) {
         ProductId = productId;
         this.productName = productName;
         this.productPrice = productPrice;
@@ -31,6 +32,7 @@ public class ProductModel implements Serializable {
         this.ownerId = ownerId;
         this.syncStatus = syncStatus;
         this.productStatus = productStatus;
+        this.isDeleted = isDeleted;
         this.expanded = false;
     }
 
@@ -96,5 +98,13 @@ public class ProductModel implements Serializable {
 
     public void setSyncStatus(Boolean syncStatus) {
         this.syncStatus = syncStatus;
+    }
+
+    public Boolean getDeleted() {
+        return isDeleted;
+    }
+
+    public void setDeleted(Boolean deleted) {
+        isDeleted = deleted;
     }
 }

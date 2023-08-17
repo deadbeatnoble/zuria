@@ -21,6 +21,7 @@ import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -110,8 +111,56 @@ public class StoreFragment extends Fragment {
         super.onStart();
         if (NetworkChangeListener.syncStatus) {
             uploadUnsyncedProductsToFirebase();
+            offlineDeletedProducts();
+
+
+            /*List<ProductModel> deletedProducts = dbHelper.getDeletedProducts();
+                    for (ProductModel deletedProduct : deletedProducts) {
+                        deletedProductFromFirebase(deletedProduct, position);
+                    }*/
         }
     }
+
+    private void offlineDeletedProducts() {
+        List<ProductModel> deletedProducts = new DBHelper(getActivity()).getDeletedProducts();
+        for (ProductModel deletedProduct : deletedProducts) {
+            deletedProductFromFirebase(deletedProduct);
+        }
+    }
+
+    private void deletedProductFromFirebase(ProductModel productModel) {
+        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("products/"+productModel.getOwnerId()+"/"+productModel.getProductId());
+        StorageReference storageReference = FirebaseStorage.getInstance().getReference("products");
+        StorageReference fileReference = storageReference.child(productModel.getOwnerId() + "T" + productModel.getProductId() + "." + getFileExtension(Uri.parse(productModel.getProductImage())));
+        Task<Void> task = databaseReference.removeValue();
+        task.addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void unused) {
+                fileReference.delete()
+                        .addOnSuccessListener(new OnSuccessListener<Void>() {
+                            @Override
+                            public void onSuccess(Void unused) {
+                                new DBHelper(getActivity()).deleteProduct(productModel);
+                                Toast.makeText(getActivity(), "Successfully deleted " + productModel.getProductName(), Toast.LENGTH_SHORT).show();
+                            }
+                        })
+                        .addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                new DBHelper(getActivity()).updateDeletedProducts(productModel.getProductId(), true);
+                                Toast.makeText(getActivity(), "Failed to delete " + productModel.getProductName(), Toast.LENGTH_SHORT).show();
+                            }
+                        });
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                new DBHelper(getActivity()).updateDeletedProducts(productModel.getProductId(), true);
+                Toast.makeText(getActivity(), "Failed to delete " + productModel.getProductName(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
     private void uploadUnsyncedProductsToFirebase() {
         DBHelper dbHelper = new DBHelper(getActivity());
         List<ProductModel> unsyncedProducts = dbHelper.getUnsyncedProducts();
@@ -120,11 +169,17 @@ public class StoreFragment extends Fragment {
             // After successful upload, update the sync status to true
             //String firebaseId = "generated_firebase_id"; // Generate a unique ID or use Firebase's auto-generated ID
             //productModel.setSyncStatus(true);
-            if (uploadProduct(productModel)) {
+            uploadProduct(productModel, new UploadCallback() {
+                @Override
+                public void onSuccess(boolean success) {
+                    dbHelper.updateProductSyncStatus(productModel.getProductId(), success);
+                }
+            });
+            /*if (uploadProduct(productModel)) {
                 dbHelper.updateProductSyncStatus(productModel.getProductId(), true);
             } else {
                 dbHelper.updateProductSyncStatus(productModel.getProductId(), false);
-            }
+            }*/
         }
     }
     @Override
@@ -137,8 +192,7 @@ public class StoreFragment extends Fragment {
         MimeTypeMap mimeTypeMap = MimeTypeMap.getSingleton();
         return mimeTypeMap.getExtensionFromMimeType(contentResolver.getType(uri));
     }
-    private boolean uploadProduct(ProductModel productModel) {
-        boolean[] uploadStatus = {false};
+    private void uploadProduct(ProductModel productModel, UploadCallback callback) {
         StorageReference fileReference = storageReference.child(productModel.getOwnerId() + "T" + productModel.getProductId() + "." + getFileExtension(Uri.parse(productModel.getProductImage())));
         fileReference.putFile(Uri.parse(productModel.getProductImage()))
                 .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
@@ -160,7 +214,7 @@ public class StoreFragment extends Fragment {
                                 Toast.makeText(getActivity(), "Successfully uploaded product", Toast.LENGTH_SHORT).show();
                                 ProductUpload productUpload = new ProductUpload(productModel.getProductId(), productModel.getProductName(),productModel.getProductPrice(), productModel.getProductDesciption(), productImageUrl, productModel.getOwnerId(), productModel.getProductStatus());
                                 databaseReference.child(productModel.getProductId()).setValue(productUpload);
-                                uploadStatus[0] = true;
+                                callback.onSuccess(true);
                             }
                         });
                     }
@@ -169,7 +223,7 @@ public class StoreFragment extends Fragment {
                     @Override
                     public void onFailure(@NonNull Exception e) {
                         Toast.makeText(getActivity(), "Failed to upload product!", Toast.LENGTH_SHORT).show();
-                        uploadStatus[0] = false;
+                        callback.onSuccess(false);
                     }
                 })
                 .addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
@@ -179,6 +233,9 @@ public class StoreFragment extends Fragment {
                            progress.setProgress((int)progress);*/
                     }
                 });
-            return uploadStatus[0];
         }
+
+    interface UploadCallback {
+        void onSuccess(boolean success);
+    }
 }

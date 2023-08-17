@@ -1,5 +1,6 @@
 package com.ex.FG002;
 
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -9,6 +10,7 @@ import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.MimeTypeMap;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.Switch;
@@ -22,6 +24,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.divider.MaterialDivider;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -137,11 +140,71 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
             @Override
             public void onClick(View view) {
                 DBHelper dbHelper = new DBHelper(context);
-                dbHelper.deleteProduct(productModel);
-                productList.remove(position);
-                notifyDataSetChanged();
+                if (NetworkChangeListener.syncStatus) {
+                    //connected
+                    //dbHelper.deleteProduct(productModel);
+                    deletedProductFromFirebase(productModel);
+                    productList.remove(position);
+                    notifyDataSetChanged();
+                } else {
+                    //not connected
+
+                    dbHelper.updateDeletedProducts(productModel.getProductId(), true);
+                    productList.remove(position);
+                    notifyDataSetChanged();
+
+                    /*List<ProductModel> deletedProducts = dbHelper.getDeletedProducts();
+                    for (ProductModel deletedProduct : deletedProducts) {
+                        deletedProductFromFirebase(deletedProduct, position);
+                    }*/
+                }
+                //dbHelper.deleteProduct(productModel);
+                //productList.remove(position);
+
+
+                //notifyDataSetChanged();
             }
         });
+    }
+
+    private void deletedProductFromFirebase(ProductModel productModel) {
+        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("products/"+productModel.getOwnerId()+"/"+productModel.getProductId());
+        StorageReference storageReference = FirebaseStorage.getInstance().getReference("products");
+        StorageReference fileReference = storageReference.child(productModel.getOwnerId() + "T" + productModel.getProductId() + "." +getFileExtension(productModel.getProductImage()));
+        Task<Void> task = databaseReference.removeValue();
+        task.addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void unused) {
+                fileReference.delete()
+                        .addOnSuccessListener(new OnSuccessListener<Void>() {
+                            @Override
+                            public void onSuccess(Void unused) {
+                                new DBHelper(context).deleteProduct(productModel);
+                                Toast.makeText(context, "Successfully deleted " + productModel.getProductName(), Toast.LENGTH_SHORT).show();
+                            }
+                        })
+                        .addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                new DBHelper(context).updateDeletedProducts(productModel.getProductId(), true);
+                                Toast.makeText(context, "Failed to delete " + productModel.getProductName(), Toast.LENGTH_SHORT).show();
+                            }
+                        });
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                new DBHelper(context).updateDeletedProducts(productModel.getProductId(), true);
+                Toast.makeText(context, "Failed to delete " + productModel.getProductName(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private String getFileExtension(String productImage) {
+        Uri uri = Uri.parse(productImage);
+        ContentResolver contentResolver = context.getContentResolver();
+        MimeTypeMap mimeTypeMap = MimeTypeMap.getSingleton();
+        return mimeTypeMap.getExtensionFromMimeType(contentResolver.getType(uri));
     }
 
     @Override

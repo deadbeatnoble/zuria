@@ -24,6 +24,7 @@ public class DBHelper extends SQLiteOpenHelper {
     private static final String COLUMN_OWNER_ID = "OID";
     private static final String COLUMN_SYNC_STATUS = "SYNC";
     private static final String COLUMN_PRODUCT_STATUS = "PRODUCT_STATUS";
+    private static final String COLUMN_PRODUCT_IS_DELETED = "PRODUCT_IS_DELETED";
 
     public DBHelper(@Nullable Context context) {
         super(context, "createdproducts.db", null, 2);
@@ -39,7 +40,8 @@ public class DBHelper extends SQLiteOpenHelper {
                 + COLUMN_PRODUCT_IMAGE + " TEXT, "
                 + COLUMN_OWNER_ID + " TEXT, "
                 + COLUMN_SYNC_STATUS + " INTEGER, "
-                + COLUMN_PRODUCT_STATUS + " INTEGER)";
+                + COLUMN_PRODUCT_STATUS + " INTEGER, "
+                + COLUMN_PRODUCT_IS_DELETED + " INTEGER)";
 
         db.execSQL(createTableStatement);
     }
@@ -67,6 +69,7 @@ public class DBHelper extends SQLiteOpenHelper {
         values.put(COLUMN_OWNER_ID, productModel.getOwnerId());
         values.put(COLUMN_SYNC_STATUS, productModel.getSyncStatus());
         values.put(COLUMN_PRODUCT_STATUS, productModel.getProductStatus());
+        values.put(COLUMN_PRODUCT_IS_DELETED, productModel.getDeleted());
 
         db.insert(PRODUCT_TABLE, null, values);
         db.close();
@@ -76,14 +79,10 @@ public class DBHelper extends SQLiteOpenHelper {
 
     public boolean deleteProduct(ProductModel productModel) {
         SQLiteDatabase db = this.getWritableDatabase();
-        String deleteQuery = "DELETE FROM " + PRODUCT_TABLE + " WHERE " + COLUMN_ID + " = '" + productModel.getProductId() + "'";
-        Cursor cursor = db.rawQuery(deleteQuery, null);
-
-        if (cursor.moveToFirst()) {
-            return true;
-        } else {
-            return false;
-        }
+        String whereClause = COLUMN_ID + " = ?";
+        String[] whereArgs = { productModel.getProductId() };
+        int rowsDeleted = db.delete(PRODUCT_TABLE, whereClause, whereArgs);
+        return rowsDeleted > 0;
     }
 
     public List<ProductModel> getProducts() {
@@ -119,7 +118,13 @@ public class DBHelper extends SQLiteOpenHelper {
                 } else {
                     productStatus = false;
                 }
-                ProductModel productModel = new ProductModel(productId,productName,productPrice,productDescription,productImage,ownerId, syncStatus, productStatus);
+                boolean productIsDeleted;
+                if (cursor.getInt(8) == 1) {
+                    productIsDeleted = true;
+                } else {
+                    productIsDeleted = false;
+                }
+                ProductModel productModel = new ProductModel(productId,productName,productPrice,productDescription,productImage,ownerId, syncStatus, productStatus, productIsDeleted);
                 returnList.add(productModel);
 
             } while(cursor.moveToNext());
@@ -143,6 +148,7 @@ public class DBHelper extends SQLiteOpenHelper {
         cv.put(COLUMN_OWNER_ID, productModel.getOwnerId());
         cv.put(COLUMN_SYNC_STATUS, productModel.getSyncStatus());
         cv.put(COLUMN_PRODUCT_STATUS, productModel.getProductStatus());
+        cv.put(COLUMN_PRODUCT_IS_DELETED, productModel.getDeleted());
 
 
         long insert = db.update(PRODUCT_TABLE, cv, "id=?", new String[]{String.valueOf(productModel.getProductId())});
@@ -164,7 +170,8 @@ public class DBHelper extends SQLiteOpenHelper {
                 DBHelper.COLUMN_PRODUCT_IMAGE,
                 DBHelper.COLUMN_OWNER_ID,
                 DBHelper.COLUMN_SYNC_STATUS,
-                DBHelper.COLUMN_PRODUCT_STATUS
+                DBHelper.COLUMN_PRODUCT_STATUS,
+                DBHelper.COLUMN_PRODUCT_IS_DELETED
         };
 
         String selection = DBHelper.COLUMN_ID + " = ?";
@@ -200,7 +207,13 @@ public class DBHelper extends SQLiteOpenHelper {
             }else {
                 productStatus = false;
             }
-            productModel = new ProductModel(productId, productName, productPrice, productDescription, productImage, ownerId, syncStatus, productStatus);
+            boolean productIsDeleted;
+            if (cursor.getInt(cursor.getColumnIndexOrThrow(DBHelper.COLUMN_PRODUCT_IS_DELETED)) == 1) {
+                productIsDeleted = true;
+            }else {
+                productIsDeleted = false;
+            }
+            productModel = new ProductModel(productId, productName, productPrice, productDescription, productImage, ownerId, syncStatus, productStatus, productIsDeleted);
         }
 
         cursor.close();
@@ -221,11 +234,13 @@ public class DBHelper extends SQLiteOpenHelper {
                 DBHelper.COLUMN_PRODUCT_IMAGE,
                 DBHelper.COLUMN_OWNER_ID,
                 DBHelper.COLUMN_SYNC_STATUS,
-                DBHelper.COLUMN_PRODUCT_STATUS
+                DBHelper.COLUMN_PRODUCT_STATUS,
+                DBHelper.COLUMN_PRODUCT_IS_DELETED
         };
 
-        String selection = DBHelper.COLUMN_OWNER_ID + " = ?";
-        String[] selectionArgs = { String.valueOf(productOwnerId) };
+        String selection = DBHelper.COLUMN_OWNER_ID + " = ? AND " + DBHelper.COLUMN_PRODUCT_IS_DELETED + " = ?";
+        String[] selectionArgs = { String.valueOf(productOwnerId), "0" }; // Assuming "0" represents false
+
 
         Cursor cursor = db.query(
                 DBHelper.PRODUCT_TABLE,
@@ -259,7 +274,13 @@ public class DBHelper extends SQLiteOpenHelper {
                 }else {
                     productStatus = false;
                 }
-                productModel = new ProductModel(productId, productName, productPrice, productDescription, productImage, productOwnerId, syncStatus, productStatus);
+                boolean productIsDeleted;
+                if (cursor.getInt(cursor.getColumnIndexOrThrow(DBHelper.COLUMN_PRODUCT_IS_DELETED)) == 1) {
+                    productIsDeleted = true;
+                }else {
+                    productIsDeleted = false;
+                }
+                productModel = new ProductModel(productId, productName, productPrice, productDescription, productImage, productOwnerId, syncStatus, productStatus, productIsDeleted);
 
                 returnList.add(productModel);
 
@@ -286,7 +307,8 @@ public class DBHelper extends SQLiteOpenHelper {
                 DBHelper.COLUMN_PRODUCT_IMAGE,
                 DBHelper.COLUMN_OWNER_ID,
                 DBHelper.COLUMN_SYNC_STATUS,
-                DBHelper.COLUMN_PRODUCT_STATUS
+                DBHelper.COLUMN_PRODUCT_STATUS,
+                DBHelper.COLUMN_PRODUCT_IS_DELETED
         };
 
         String selection = DBHelper.COLUMN_SYNC_STATUS + " = ?";
@@ -324,7 +346,13 @@ public class DBHelper extends SQLiteOpenHelper {
                 }else {
                     productStatus = false;
                 }
-                productModel = new ProductModel(productId, productName, productPrice, productDescription, productImage, productOwnerId, syncStatus, productStatus);
+                boolean productIsDeleted;
+                if (cursor.getInt(cursor.getColumnIndexOrThrow(DBHelper.COLUMN_PRODUCT_IS_DELETED)) == 1) {
+                    productIsDeleted = true;
+                }else {
+                    productIsDeleted = false;
+                }
+                productModel = new ProductModel(productId, productName, productPrice, productDescription, productImage, productOwnerId, syncStatus, productStatus, productIsDeleted);
 
                 unsyncedProducts.add(productModel);
 
@@ -373,6 +401,97 @@ public class DBHelper extends SQLiteOpenHelper {
 
 
         long insert = db.update(PRODUCT_TABLE, cv, "id=?", new String[]{String.valueOf(productId)});
+        if (insert == -1) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+    public List<ProductModel> getDeletedProducts() {
+        List<ProductModel> deletedProducts = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        String[] projection = {
+                DBHelper.COLUMN_ID,
+                DBHelper.COLUMN_PRODUCT_NAME,
+                DBHelper.COLUMN_PRODUCT_PRICE,
+                DBHelper.COLUMN_PRODUCT_DESCRIPTION,
+                DBHelper.COLUMN_PRODUCT_IMAGE,
+                DBHelper.COLUMN_OWNER_ID,
+                DBHelper.COLUMN_SYNC_STATUS,
+                DBHelper.COLUMN_PRODUCT_STATUS,
+                DBHelper.COLUMN_PRODUCT_IS_DELETED
+        };
+
+        String selection = DBHelper.COLUMN_PRODUCT_IS_DELETED + " = ?";
+        String[] selectionArgs = { String.valueOf(1) };
+
+        Cursor cursor = db.query(
+                DBHelper.PRODUCT_TABLE,
+                projection,
+                selection,
+                selectionArgs,
+                null,
+                null,
+                null
+        );
+
+        ProductModel productModel = null;
+
+        if (cursor.moveToFirst()) {
+            do {
+                String productId = cursor.getString(cursor.getColumnIndexOrThrow(DBHelper.COLUMN_ID));
+                String productName = cursor.getString(cursor.getColumnIndexOrThrow(DBHelper.COLUMN_PRODUCT_NAME));
+                double productPrice = cursor.getDouble(cursor.getColumnIndexOrThrow(DBHelper.COLUMN_PRODUCT_PRICE));
+                String productDescription = cursor.getString(cursor.getColumnIndexOrThrow(DBHelper.COLUMN_PRODUCT_DESCRIPTION));
+                String productImage = cursor.getString(cursor.getColumnIndexOrThrow(DBHelper.COLUMN_PRODUCT_IMAGE));
+                String productOwnerId = cursor.getString(cursor.getColumnIndexOrThrow(DBHelper.COLUMN_OWNER_ID));
+                boolean syncStatus;
+                if (cursor.getInt(cursor.getColumnIndexOrThrow(DBHelper.COLUMN_SYNC_STATUS)) == 1) {
+                    syncStatus = true;
+                }else {
+                    syncStatus = false;
+                }
+                boolean productStatus;
+                if (cursor.getInt(cursor.getColumnIndexOrThrow(DBHelper.COLUMN_PRODUCT_STATUS)) == 1) {
+                    productStatus = true;
+                }else {
+                    productStatus = false;
+                }
+                boolean productIsDeleted;
+                if (cursor.getInt(cursor.getColumnIndexOrThrow(DBHelper.COLUMN_PRODUCT_IS_DELETED)) == 1) {
+                    productIsDeleted = true;
+                }else {
+                    productIsDeleted = false;
+                }
+                productModel = new ProductModel(productId, productName, productPrice, productDescription, productImage, productOwnerId, syncStatus, productStatus, productIsDeleted);
+
+                deletedProducts.add(productModel);
+
+            } while (cursor.moveToNext());
+        } else {
+
+        }
+
+        cursor.close();
+        db.close();
+
+        return deletedProducts;
+    }
+    public boolean updateDeletedProducts(String producId, boolean isDeleted) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues cv = new ContentValues();
+
+
+        /*cv.put(COLUMN_PRODUCT_NAME, productModel.getProductName());
+        cv.put(COLUMN_PRODUCT_PRICE, productModel.getProductPrice());
+        cv.put(COLUMN_PRODUCT_DESCRIPTION, productModel.getProductDesciption());
+        cv.put(COLUMN_PRODUCT_IMAGE, productModel.getProductImage());
+        cv.put(COLUMN_OWNER_ID, productModel.getOwnerId());*/
+        cv.put(COLUMN_PRODUCT_IS_DELETED, isDeleted ? 1 : 0);
+
+
+        long insert = db.update(PRODUCT_TABLE, cv, "id=?", new String[]{String.valueOf(producId)});
         if (insert == -1) {
             return false;
         } else {
