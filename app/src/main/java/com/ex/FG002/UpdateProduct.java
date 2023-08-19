@@ -7,23 +7,36 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
+import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.view.View;
+import android.webkit.MimeTypeMap;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputLayout;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 import com.squareup.picasso.Picasso;
 import com.theartofdev.edmodo.cropper.CropImage;
 
 import java.io.ByteArrayOutputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 public class UpdateProduct extends AppCompatActivity {
     private TextInputLayout til_productName;
@@ -64,19 +77,21 @@ public class UpdateProduct extends AppCompatActivity {
 
         DBHelper dbHelper = new DBHelper(this);
         ProductModel productModel = dbHelper.getProductById(productId);
+        boolean constantProductStatus;
 
         if (productModel != null) {
             til_productName.getEditText().setText(productModel.getProductName());
             til_productPrice.getEditText().setText(String.valueOf(productModel.getProductPrice()));
             til_productDescription.getEditText().setText(productModel.getProductDesciption());
-
+            constantProductStatus = productModel.getProductStatus();
             //Bitmap imageBitmap = BitmapFactory.decodeByteArray(productModel.getProductImage(), 0, productModel.getProductImage().length);
             //iv_productImageUP.setImageBitmap(imageBitmap);
 
-            Picasso.get().load(imageUri).into(iv_productImageUP);
+            Picasso.get().load(Uri.parse(productModel.getProductImage())).into(iv_productImageUP);
 
 
         } else {
+            constantProductStatus = false;
             Toast.makeText(this, "Product not found", Toast.LENGTH_SHORT).show();
             finish();
         }
@@ -103,24 +118,103 @@ public class UpdateProduct extends AppCompatActivity {
         btn_updateProduct.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                update(view);
+                update(view, constantProductStatus);
                 startActivity(new Intent(UpdateProduct.this, shopOwnerPOV.class));
             }
         });
     }
-    public void update(View view) {
+    public void update(View view, boolean constantProductStatus) {
         String productName = til_productName.getEditText().getText().toString();
         String productPrice = til_productPrice.getEditText().getText().toString();
         String productDescription = til_productDescription.getEditText().getText().toString();
-        String productImage = imageUri.toString();
+        String productImage = String.valueOf(getUriFromDrawable(iv_productImageUP.getDrawable()));
 
-        ProductModel productModel = new ProductModel(productId, productName, Double.parseDouble(productPrice), productDescription, productImage, new MyApplication().getOwnerId(), NetworkChangeListener.syncStatus, false, false);
+        ProductModel productModel = new ProductModel(productId, productName, Double.parseDouble(productPrice), productDescription, productImage, new MyApplication().getOwnerId(), NetworkChangeListener.syncStatus, constantProductStatus, false);
 
         DBHelper dbHelper = new DBHelper(this);
+
+
+
+        if (NetworkChangeListener.syncStatus) {
+            //connected
+            updateFromFirebase(productModel);
+        } else {
+            //not connected
+            dbHelper.updateProduct(productModel);
+            dbHelper.updateProductSyncStatus(productModel.getProductId(), false);
+        }
+
+
+
 
         Boolean success = dbHelper.updateProduct(productModel);
 
         Toast.makeText(UpdateProduct.this, "success = " + success, Toast.LENGTH_SHORT).show();
+    }
+
+    private Uri getUriFromDrawable(Drawable drawable) {
+        Bitmap bitmap = ((BitmapDrawable) drawable).getBitmap();
+        String path = MediaStore.Images.Media.insertImage(getContentResolver(), bitmap, "Image Title", null);
+        return Uri.parse(path);
+    }
+
+    private void updateFromFirebase(ProductModel productModel) {
+        StorageReference storageReference = FirebaseStorage.getInstance().getReference("products");
+        StorageReference fileReference = storageReference.child(productModel.getOwnerId() + "T" + productModel.getProductId() + "." + getFileExtension(Uri.parse(productModel.getProductImage())));
+        fileReference.putFile(Uri.parse(productModel.getProductImage()))
+                .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        fileReference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                            @Override
+                            public void onSuccess(Uri uri) {
+                                Map<String, Object> map = new HashMap<>();
+
+                                map.put("ownerId", productModel.getOwnerId());
+                                map.put("productDesciption", productModel.getProductDesciption());
+                                map.put("productId", productModel.getProductId());
+                                map.put("productImage", String.valueOf(uri));
+                                map.put("productName", productModel.getProductName());
+                                map.put("productPrice", productModel.getProductPrice());
+                                map.put("productStatus", productModel.getProductStatus());
+
+                                DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("products/" + productModel.getOwnerId());
+                                databaseReference.child(productModel.getProductId())
+                                        .updateChildren(map)
+                                        .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                            @Override
+                                            public void onSuccess(Void unused) {
+                                                new DBHelper(UpdateProduct.this).updateProduct(productModel);
+                                                new DBHelper(UpdateProduct.this).updateProductSyncStatus(productModel.getProductId(), true);
+                                                Toast.makeText(UpdateProduct.this, "Successfully updated " + productModel.getProductName(), Toast.LENGTH_SHORT).show();
+                                            }
+                                        })
+                                        .addOnFailureListener(new OnFailureListener() {
+                                            @Override
+                                            public void onFailure(@NonNull Exception e) {
+                                                new DBHelper(UpdateProduct.this).updateProduct(productModel);
+                                                new DBHelper(UpdateProduct.this).updateProductSyncStatus(productModel.getProductId(), false);
+                                                Toast.makeText(UpdateProduct.this, "Failed to update " + productModel.getProductName(), Toast.LENGTH_SHORT).show();
+                                            }
+                                        });
+                            }
+                        });
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        new DBHelper(UpdateProduct.this).updateProduct(productModel);
+                        new DBHelper(UpdateProduct.this).updateProductSyncStatus(productModel.getProductId(), false);
+                        Toast.makeText(UpdateProduct.this, "Failed to update Image of " + productModel.getProductName(), Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
+    private String getFileExtension(Uri parse) {
+        ContentResolver contentResolver = getContentResolver();
+        MimeTypeMap mimeTypeMap = MimeTypeMap.getSingleton();
+        return mimeTypeMap.getExtensionFromMimeType(contentResolver.getType(parse));
     }
     private byte[] imageToByteArray(ImageView iv_productImage) {
         Bitmap bitmap = ((BitmapDrawable) iv_productImage.getDrawable()).getBitmap();

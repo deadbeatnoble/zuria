@@ -23,17 +23,20 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-
-
+import java.util.Map;
 
 
 public class StoreFragment extends Fragment {
@@ -169,19 +172,71 @@ public class StoreFragment extends Fragment {
             // After successful upload, update the sync status to true
             //String firebaseId = "generated_firebase_id"; // Generate a unique ID or use Firebase's auto-generated ID
             //productModel.setSyncStatus(true);
-            uploadProduct(productModel, new UploadCallback() {
+            // Assuming `productId` is the unique identifier of the product
+            DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("products/" + productModel.getOwnerId() + "/" + productModel.getProductId());
+            databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
-                public void onSuccess(boolean success) {
-                    dbHelper.updateProductSyncStatus(productModel.getProductId(), success);
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    if (dataSnapshot.exists()) {
+                        // The product already exists in Firebase, update it
+                        updateProductInFirebase(databaseReference, productModel);
+                    } else {
+                        // The product does not exist in Firebase, create a new entry
+                        uploadProduct(productModel, new UploadCallback() {
+                            @Override
+                            public void onSuccess(boolean success) {
+                                dbHelper.updateProductSyncStatus(productModel.getProductId(), success);
+                            }
+                        });
+                        /*if (uploadProduct(productModel)) {
+                            dbHelper.updateProductSyncStatus(productModel.getProductId(), true);
+                        } else {
+                            dbHelper.updateProductSyncStatus(productModel.getProductId(), false);
+                        }*/
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+                    // An error occurred while querying the product
                 }
             });
-            /*if (uploadProduct(productModel)) {
-                dbHelper.updateProductSyncStatus(productModel.getProductId(), true);
-            } else {
-                dbHelper.updateProductSyncStatus(productModel.getProductId(), false);
-            }*/
+
         }
     }
+
+    private void updateProductInFirebase(DatabaseReference productRef, ProductModel productModel) {
+
+        Map<String, Object> updateData = new HashMap<>();
+
+        updateData.put("ownerId", productModel.getOwnerId());
+        updateData.put("productDesciption", productModel.getProductDesciption());
+        updateData.put("productId", productModel.getProductId());
+        updateData.put("productImage", productModel.getProductImage());
+        updateData.put("productName", productModel.getProductName());
+        updateData.put("productPrice", productModel.getProductPrice());
+        updateData.put("productStatus", productModel.getProductStatus());
+
+
+        productRef.updateChildren(updateData)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        // The product update was successful
+                        new DBHelper(getActivity()).updateProductSyncStatus(productModel.getProductId(), true);
+                        Toast.makeText(getActivity(), "Successfully updated offline changes", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        // An error occurred while updating the product
+                        new DBHelper(getActivity()).updateProductSyncStatus(productModel.getProductId(), false);
+                        Toast.makeText(getActivity(), "Failed to updated offline changes", Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
     @Override
     public void onStop() {
         getContext().unregisterReceiver(networkChangeListener);
