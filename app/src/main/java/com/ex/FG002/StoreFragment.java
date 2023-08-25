@@ -1,24 +1,35 @@
 package com.ex.FG002;
 
+import android.Manifest;
+import android.app.AlertDialog;
 import android.content.ContentResolver;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
+import android.location.Location;
+import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import android.provider.Settings;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.MimeTypeMap;
 import android.widget.Toast;
 
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -45,6 +56,10 @@ public class StoreFragment extends Fragment {
     StorageReference storageReference = FirebaseStorage.getInstance().getReference("products");
     DatabaseReference databaseReference;
     private FloatingActionButton fab_createProduct;
+    private FloatingActionButton fab_ShareLocation;
+    Location currentLocation;
+    FusedLocationProviderClient fusedLocationProviderClient;
+    public static final int REQUEST_CODE = 101;
     //add fab_createProduct = getActivity().findViewById(R.id.fab_createProduct);
 
 
@@ -79,7 +94,40 @@ public class StoreFragment extends Fragment {
         srl_refreshRecyclerView = rootView.findViewById(R.id.srl_refreshRecyclerView);
 
         fab_createProduct = rootView.findViewById(R.id.fab_createProduct);
+        fab_ShareLocation = rootView.findViewById(R.id.fab_ShareLocation);
+        fab_ShareLocation.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                    LocationManager locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+                    boolean isLocationEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+                    if (!isLocationEnabled) {
+                        AlertDialog.Builder alertDialog = new AlertDialog.Builder(getActivity());
+                        alertDialog.setTitle("Location Is Turned Off");
+                        alertDialog.setMessage("Turn on device location to access this feature");
+                        alertDialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                                startActivity(intent);
+                            }
+                        });
+                        alertDialog.setNegativeButton("Dismiss", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
 
+                            }
+                        });
+                        alertDialog.show();
+                    }
+
+                    getCurrentLocation();
+                } else {
+                    ActivityCompat.requestPermissions(getActivity(), new String[] {Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE);
+                }
+
+            }
+        });
         fab_createProduct.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -102,6 +150,29 @@ public class StoreFragment extends Fragment {
         return rootView;
     }
 
+    private void getCurrentLocation() {
+        if(ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE);
+            return;
+        }
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getActivity());
+        Task<Location> task = fusedLocationProviderClient.getLastLocation();
+        task.addOnSuccessListener(new OnSuccessListener<Location>() {
+            @Override
+            public void onSuccess(Location location) {
+                if (location != null) {
+                    currentLocation = location;
+                    Toast.makeText(getActivity(), "latitude is " + currentLocation.getLatitude() + ". longitude is " + currentLocation.getLongitude() + ".", Toast.LENGTH_SHORT).show();
+                }
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Toast.makeText(getActivity(), "Failed to get current location", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
     private List<ProductModel> generateProductModel() {
         List<ProductModel> productModels = new ArrayList<>();
         productModels.addAll(new DBHelper(this.getActivity()).getOwnerProduct(new MyApplication().getOwnerId()));
