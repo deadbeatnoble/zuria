@@ -122,6 +122,7 @@ public class StoreFragment extends Fragment {
                     }
 
                     getCurrentLocation();
+
                 } else {
                     ActivityCompat.requestPermissions(getActivity(), new String[] {Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE);
                 }
@@ -162,6 +163,13 @@ public class StoreFragment extends Fragment {
             @Override
             public void onSuccess(Location location) {
                 if (location != null) {
+
+                    if (NetworkChangeListener.syncStatus) {
+
+                    } else {
+
+                    }
+
                     currentLocation = location;
                     Toast.makeText(getActivity(), "latitude is " + currentLocation.getLatitude() + ". longitude is " + currentLocation.getLongitude() + ".", Toast.LENGTH_SHORT).show();
                 }

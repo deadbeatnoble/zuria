@@ -92,32 +92,51 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void checkAccountLogIn(String loginMobileNumber, String loginPassword) {
-        reference = FirebaseDatabase.getInstance().getReference("Users");
-        reference.child(loginMobileNumber).get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<DataSnapshot> task) {
+        UserDBHelper userDBHelper = new UserDBHelper(this);
+        Users user = new Users();
+        if (userDBHelper.checkUserExists(loginMobileNumber)) {
+            user = userDBHelper.getUserData(loginMobileNumber);
+            if (loginPassword.equals(user.getPassword())) {
                 pb_progressBar.setVisibility(View.GONE);
                 confirm.setVisibility(View.VISIBLE);
-                if (task.isSuccessful()) {
-                    //pbg
-                    if (task.getResult().exists()) {
-                        DataSnapshot dataSnapshot = task.getResult();
-                        String usernumber = String.valueOf(dataSnapshot.child("mobileNumber").getValue());
-                        String userpassword = String.valueOf(dataSnapshot.child("password").getValue());
 
-                        if (usernumber.equals(loginMobileNumber) && userpassword.equals(loginPassword)) {
-                            Intent intent = new Intent(MainActivity.this, shopOwnerPOV.class);
-                            startActivity(intent);
+                Intent intent = new Intent(MainActivity.this, shopOwnerPOV.class);
+                startActivity(intent);
+            } else {
+                Toast.makeText(this, "Invalid Username or Password", Toast.LENGTH_SHORT).show();
+            }
+
+        } else {
+            reference = FirebaseDatabase.getInstance().getReference("Users");
+            reference.child(loginMobileNumber).get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<DataSnapshot> task) {
+                    pb_progressBar.setVisibility(View.GONE);
+                    confirm.setVisibility(View.VISIBLE);
+                    if (task.isSuccessful()) {
+                        //pbg
+                        if (task.getResult().exists()) {
+                            DataSnapshot dataSnapshot = task.getResult();
+                            String usernumber = String.valueOf(dataSnapshot.child("mobileNumber").getValue());
+                            String userpassword = String.valueOf(dataSnapshot.child("password").getValue());
+
+                            if (usernumber.equals(loginMobileNumber) && userpassword.equals(loginPassword)) {
+                                pb_progressBar.setVisibility(View.GONE);
+                                confirm.setVisibility(View.VISIBLE);
+
+                                Intent intent = new Intent(MainActivity.this, shopOwnerPOV.class);
+                                startActivity(intent);
+                            } else {
+                                Toast.makeText(MainActivity.this, "Invalid Username or Password", Toast.LENGTH_SHORT).show();
+                            }
                         } else {
                             Toast.makeText(MainActivity.this, "Invalid Username or Password", Toast.LENGTH_SHORT).show();
                         }
                     } else {
-                        Toast.makeText(MainActivity.this, "Invalid Username or Password", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MainActivity.this, "Failed to login", Toast.LENGTH_SHORT).show();
                     }
-                } else {
-                    Toast.makeText(MainActivity.this, "Failed to login", Toast.LENGTH_SHORT).show();
                 }
-            }
-        });
+            });
+        }
     }
 }

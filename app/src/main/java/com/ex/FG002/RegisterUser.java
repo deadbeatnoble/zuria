@@ -10,10 +10,8 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.ex.FG002.databinding.ActivityMainBinding;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -56,7 +54,10 @@ public class RegisterUser extends AppCompatActivity {
                 if (!til_newPassword.getEditText().getText().toString().equals(til_confirmPassword.getEditText().getText().toString())) {
                     til_confirmPassword.setError("Password don't match");
                 } else {
-                    Users users = new Users(mobileNumber,password);
+                    UserDBHelper userDBHelper = new UserDBHelper(RegisterUser.this);
+                    Users users = new Users(mobileNumber, password, null, null, false, false);
+                    userDBHelper.addUserData(users);
+
                     db = FirebaseDatabase.getInstance();
                     reference = db.getReference("Users");
                     reference.child(mobileNumber).setValue(users).addOnCompleteListener(new OnCompleteListener<Void>() {
