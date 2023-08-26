@@ -100,6 +100,10 @@ public class MainActivity extends AppCompatActivity {
                 pb_progressBar.setVisibility(View.GONE);
                 confirm.setVisibility(View.VISIBLE);
 
+                MyApplication.OwnerId = loginMobileNumber;
+                MyApplication.OwnerPassword = loginPassword;
+
+
                 Intent intent = new Intent(MainActivity.this, shopOwnerPOV.class);
                 startActivity(intent);
             } else {
@@ -124,15 +128,30 @@ public class MainActivity extends AppCompatActivity {
                                 pb_progressBar.setVisibility(View.GONE);
                                 confirm.setVisibility(View.VISIBLE);
 
+                                MyApplication.OwnerId = loginMobileNumber;
+                                MyApplication.OwnerPassword = loginPassword;
+
+                                Users user = new Users(loginMobileNumber, loginPassword, null, null, false, false);
+                                userDBHelper.addUserData(user);
+
                                 Intent intent = new Intent(MainActivity.this, shopOwnerPOV.class);
                                 startActivity(intent);
                             } else {
+                                pb_progressBar.setVisibility(View.GONE);
+                                confirm.setVisibility(View.VISIBLE);
+
                                 Toast.makeText(MainActivity.this, "Invalid Username or Password", Toast.LENGTH_SHORT).show();
                             }
                         } else {
+                            pb_progressBar.setVisibility(View.GONE);
+                            confirm.setVisibility(View.VISIBLE);
+
                             Toast.makeText(MainActivity.this, "Invalid Username or Password", Toast.LENGTH_SHORT).show();
                         }
                     } else {
+                        pb_progressBar.setVisibility(View.GONE);
+                        confirm.setVisibility(View.VISIBLE);
+
                         Toast.makeText(MainActivity.this, "Failed to login", Toast.LENGTH_SHORT).show();
                     }
                 }

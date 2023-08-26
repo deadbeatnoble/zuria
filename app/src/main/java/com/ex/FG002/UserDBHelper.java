@@ -153,4 +153,100 @@ public class UserDBHelper extends SQLiteOpenHelper {
 
         return user;
     }
+
+    public boolean setUserLocation(String userMobileNumber, String latitude, String longitude, boolean shareLocation, boolean locationSyncStatus) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues cv = new ContentValues();
+
+        cv.put(COLUMN_USER_LATITUDE, latitude);
+        cv.put(COLUMN_USER_LONGITUDE, longitude);
+        cv.put(COLUMN_USER_LOCATION_SHARE, shareLocation ? 1 : 0);
+        cv.put(COLUMN_USER_LOCATION_SYNC_STATUS, locationSyncStatus ? 1 : 0);
+
+        long setLocation = db.update(USER_TABLE, cv, " USER_NUMBER=? ", new String[]{userMobileNumber});
+        if (setLocation == -1) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    public List<Users> getUnsyncedUserData() {
+        List<Users> unsyncedUsers = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        String[] projection = {
+                UserDBHelper.COLUMN_USER_MOBILE_NUMBER,
+                UserDBHelper.COLUMN_USER_PASSWORD,
+                UserDBHelper.COLUMN_USER_LATITUDE,
+                UserDBHelper.COLUMN_USER_LONGITUDE,
+                UserDBHelper.COLUMN_USER_LOCATION_SHARE,
+                UserDBHelper.COLUMN_USER_LOCATION_SYNC_STATUS,
+        };
+
+        String selection = UserDBHelper.COLUMN_USER_LOCATION_SYNC_STATUS + " = ?";
+        String[] selectionArgs = { String.valueOf(0) };
+
+        Cursor cursor = db.query(
+                UserDBHelper.USER_TABLE,
+                projection,
+                selection,
+                selectionArgs,
+                null,
+                null,
+                null
+        );
+
+        Users user = null;
+
+        if (cursor.moveToFirst()) {
+            do {
+                String mobilenumber = cursor.getString(cursor.getColumnIndexOrThrow(UserDBHelper.COLUMN_USER_MOBILE_NUMBER));
+                String password = cursor.getString(cursor.getColumnIndexOrThrow(UserDBHelper.COLUMN_USER_PASSWORD));
+                String latitude = cursor.getString(cursor.getColumnIndexOrThrow(UserDBHelper.COLUMN_USER_LATITUDE));
+                String longitude = cursor.getString(cursor.getColumnIndexOrThrow(UserDBHelper.COLUMN_USER_LONGITUDE));
+
+                boolean locationShareStauts;
+                if (cursor.getInt(cursor.getColumnIndexOrThrow(UserDBHelper.COLUMN_USER_LOCATION_SHARE)) == 1) {
+                    locationShareStauts = true;
+                }else {
+                    locationShareStauts = false;
+                }
+                boolean syncStatus;
+                if (cursor.getInt(cursor.getColumnIndexOrThrow(UserDBHelper.COLUMN_USER_LOCATION_SYNC_STATUS)) == 1) {
+                    syncStatus = true;
+                }else {
+                    syncStatus = false;
+                }
+
+                user = new Users(mobilenumber, password, latitude, longitude, locationShareStauts, syncStatus);
+
+                unsyncedUsers.add(user);
+
+            } while (cursor.moveToNext());
+        } else {
+
+        }
+
+        cursor.close();
+        db.close();
+
+        return unsyncedUsers;
+
+    }
+
+    public boolean setUserSyncStatus(String mobileNumber, boolean status) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues cv = new ContentValues();
+
+        cv.put(COLUMN_USER_LOCATION_SYNC_STATUS, status ? 1 : 0);
+
+        long success = db.update(USER_TABLE, cv, "USER_NUMBER=?", new String[]{mobileNumber});
+
+        if (success == -1) {
+            return false;
+        } else {
+            return true;
+        }
+    }
 }

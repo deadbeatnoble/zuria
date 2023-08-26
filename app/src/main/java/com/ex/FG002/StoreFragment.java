@@ -30,6 +30,7 @@ import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -126,7 +127,6 @@ public class StoreFragment extends Fragment {
                 } else {
                     ActivityCompat.requestPermissions(getActivity(), new String[] {Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE);
                 }
-
             }
         });
         fab_createProduct.setOnClickListener(new View.OnClickListener() {
@@ -163,15 +163,37 @@ public class StoreFragment extends Fragment {
             @Override
             public void onSuccess(Location location) {
                 if (location != null) {
-
                     if (NetworkChangeListener.syncStatus) {
 
-                    } else {
+                        //uploads to the local database here
+                        Users user = new Users(new MyApplication().getOwnerId(), new MyApplication().getOwnerPaswword(), String.valueOf(location.getLatitude()), String.valueOf(location.getLongitude()), true, true);
+                        UserDBHelper userDBHelper = new UserDBHelper(getContext());
+                        userDBHelper.setUserLocation(user.getMobileNumber(), user.getLatitude(), user.getLongitude(), true, true);
+                        Toast.makeText(getActivity(), "Online changes made!", Toast.LENGTH_SHORT).show();
 
+                        //uploads to the server here
+                        FirebaseDatabase db = FirebaseDatabase.getInstance();
+                        DatabaseReference reference = db.getReference("Users");
+                        reference.child(user.getMobileNumber()).setValue(user).addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+                                Toast.makeText(getActivity(), "Location is shared!", Toast.LENGTH_SHORT).show();
+                                userDBHelper.setUserSyncStatus(user.getMobileNumber(), true);
+                            }
+                        });
+
+
+                    } else {
+                        //only to the local database
+                        UserDBHelper userDBHelper = new UserDBHelper(getContext());
+                        userDBHelper.setUserLocation(MyApplication.OwnerId, String.valueOf(location.getLatitude()), String.valueOf(location.getLongitude()), true, false);
+                        Toast.makeText(getActivity(), "Offline changes made!", Toast.LENGTH_SHORT).show();
+                        currentLocation = location;
+                        Toast.makeText(getActivity(), "Offline: latitude is " + location.getLatitude() + ". longitude is " + location.getLongitude() + ".", Toast.LENGTH_SHORT).show();
                     }
 
-                    currentLocation = location;
-                    Toast.makeText(getActivity(), "latitude is " + currentLocation.getLatitude() + ". longitude is " + currentLocation.getLongitude() + ".", Toast.LENGTH_SHORT).show();
+                    //currentLocation = location;
+                    //Toast.makeText(getActivity(), "latitude is " + currentLocation.getLatitude() + ". longitude is " + currentLocation.getLongitude() + ".", Toast.LENGTH_SHORT).show();
                 }
             }
         }).addOnFailureListener(new OnFailureListener() {
@@ -193,6 +215,7 @@ public class StoreFragment extends Fragment {
         super.onStart();
         if (NetworkChangeListener.syncStatus) {
             uploadUnsyncedProductsToFirebase();
+            uploadUnsyncedUserDataToFirebase();
             offlineDeletedProducts();
 
 
@@ -200,6 +223,38 @@ public class StoreFragment extends Fragment {
                     for (ProductModel deletedProduct : deletedProducts) {
                         deletedProductFromFirebase(deletedProduct, position);
                     }*/
+        }
+    }
+
+    private void uploadUnsyncedUserDataToFirebase() {
+        UserDBHelper userDBHelper = new UserDBHelper(getContext());
+        List<Users> unsyncedUsers = userDBHelper.getUnsyncedUserData();
+        for (Users unsyncedUser : unsyncedUsers) {
+            //upload to firebase
+            Map<String, Object> updateUserData = new HashMap<>();
+
+            updateUserData.put("mobileNumber", unsyncedUser.getMobileNumber());
+            updateUserData.put("password", unsyncedUser.getPassword());
+            updateUserData.put("latitude", unsyncedUser.getLatitude());
+            updateUserData.put("longitude", unsyncedUser.getLongitude());
+            updateUserData.put("shareUserLocation", unsyncedUser.isShareUserLocation());
+            updateUserData.put("locationSyncStatus", true);
+
+            DatabaseReference databaseReference1 = FirebaseDatabase.getInstance().getReference("Users/" + unsyncedUser.getMobileNumber());
+            databaseReference1.updateChildren(updateUserData)
+                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void unused) {
+                            Toast.makeText(getActivity(), "Successfully synced user data!", Toast.LENGTH_SHORT).show();
+                            userDBHelper.setUserSyncStatus(unsyncedUser.getMobileNumber(), true);
+                        }
+                    })
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            userDBHelper.setUserSyncStatus(unsyncedUser.getMobileNumber(), false);
+                        }
+                    });
         }
     }
 
