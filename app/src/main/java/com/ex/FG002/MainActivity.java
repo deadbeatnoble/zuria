@@ -35,7 +35,7 @@ public class MainActivity extends AppCompatActivity {
     private Button confirm;
     private ProgressBar pb_progressBar;
     DatabaseReference reference;
-
+    private TextView userPage;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -47,8 +47,14 @@ public class MainActivity extends AppCompatActivity {
         tv_registerUser = findViewById(R.id.tv_registerUser);
         confirm = findViewById(R.id.confirm);
         pb_progressBar = findViewById(R.id.pb_progressBar);
-
-
+        userPage = findViewById(R.id.bio);
+        userPage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(MainActivity.this, shopCustomerPOV.class);
+                startActivity(intent);
+            }
+        });
         tv_registerUser.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

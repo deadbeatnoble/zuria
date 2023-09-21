@@ -35,6 +35,8 @@
             android:textSize="75dp"></TextView>
 
         <TextView
+            android:textColor="@color/gold"
+            android:textStyle="bold"
             android:id="@+id/bio"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
