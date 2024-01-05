@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:gravity="center_horizontal"
-    tools:context=".verifyOTP"
+    tools:context=".OpenSource.verifyOTP"
     android:background="@color/white"
     android:paddingTop="250dp"
     android:paddingLeft="30dp"

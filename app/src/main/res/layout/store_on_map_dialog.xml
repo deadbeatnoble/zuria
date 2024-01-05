@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/store_on_map_dialog_bg">
+
+
+    <ImageView
+        android:id="@+id/iv_closeBottomSheetDialog"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:src="@drawable/close"
+        android:layout_gravity="end"
+        android:layout_marginRight="30dp">
+    </ImageView>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center">
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/civ_storeImage"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:src="@drawable/store_profile_pic"
+            android:layout_marginRight="25dp">
+        </de.hdodenhof.circleimageview.CircleImageView>
+
+        <TextView
+            android:id="@+id/tv_storeName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Store Name"
+            android:textColor="@color/black"
+            android:textStyle="bold"
+            android:textSize="18dp">
+        </TextView>
+
+    </LinearLayout>
+
+
+    <Button
+        android:id="@+id/btn_openStore"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Open Store"
+        android:layout_marginTop="20dp"
+        android:layout_gravity="center">
+    </Button>
+
+</LinearLayout>

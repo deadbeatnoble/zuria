@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".VendorBased.VendorStoreRegistry">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <ImageView
+            android:id="@+id/iv_storePic"
+            android:layout_width="match_parent"
+            android:layout_height="250dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/store_profile_pic"/>
+
+        <EditText
+            android:id="@+id/et_storeName"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_margin="16dp"
+            android:hint="Store Name">
+        </EditText>
+
+        <EditText
+            android:id="@+id/et_storeLocation"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_margin="16dp"
+            android:hint="Set Location">
+        </EditText>
+
+        <Button
+            android:id="@+id/btn_storeConfirmed"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Continue">
+        </Button>
+
+    </LinearLayout>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_storePicFromGallery"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        app:layout_anchor="@id/iv_storePic"
+        app:layout_anchorGravity="bottom|right"
+        app:srcCompat="@drawable/camera" />
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
