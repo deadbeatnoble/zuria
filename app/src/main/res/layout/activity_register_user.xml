@@ -73,8 +73,18 @@
             android:text="Register"
             android:drawableEnd="@drawable/farrow"
             android:layout_gravity="end"
-            android:layout_marginBottom="24dp">
+            android:layout_marginBottom="14dp">
         </Button>
+
+        <ProgressBar
+            android:id="@+id/pb_progressBar"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="right"
+            android:layout_marginEnd="50dp"
+            android:visibility="gone">
+        </ProgressBar>
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

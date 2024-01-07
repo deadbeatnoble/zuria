@@ -31,13 +31,41 @@
             android:layout_width="match_parent"
             android:layout_height="50dp"
             android:layout_margin="16dp"
-            android:hint="Set Location">
+            android:drawableStart="@drawable/location"
+            android:drawablePadding="10dp"
+            android:hint="ex: 9.1450, 40.4897">
         </EditText>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="or"
+                android:textSize="18dp"
+                android:layout_marginRight="10dp"></TextView>
+
+            <TextView
+                android:id="@+id/tv_setCurrentLocation"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="set current location"
+                android:textColor="@color/light_blue"
+                android:textStyle="bold"
+                android:textSize="18dp"></TextView>
+
+        </LinearLayout>
 
         <Button
             android:id="@+id/btn_storeConfirmed"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="30dp"
             android:text="Continue">
         </Button>
 
