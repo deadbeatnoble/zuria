@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,6 +18,8 @@ import android.widget.Toast;
 import com.ex.FG002.OpenSource.Users;
 import com.ex.FG002.ProductBased.CustomerCartProductAdapter;
 import com.ex.FG002.ProductBased.CustomerCartProductModel;
+import com.ex.FG002.ProductBased.CustomerCartStoreAdapter;
+import com.ex.FG002.ProductBased.CustomerCartStoreModel;
 import com.ex.FG002.ProductBased.CustomerProductAdapter;
 import com.ex.FG002.ProductBased.CustomerProductModel;
 import com.ex.FG002.R;
@@ -34,8 +37,13 @@ import java.util.Map;
 public class CustomerBasedCartTabOrderFragment extends Fragment {
 
     private List<CustomerCartProductModel> customerCartProductModelList = new ArrayList<>();
+    private List<CustomerCartStoreModel> customerCartStoreModelList = new ArrayList<>();
+
     private RecyclerView customerCartProductRecyclerView;
+    private RecyclerView customerCartStoreRecyclerView;
+
     private CustomerCartProductAdapter customerCartProductAdapter;
+    private CustomerCartStoreAdapter customerCartStoreAdapter;
 
     private DatabaseReference databaseReference;
 
@@ -44,12 +52,20 @@ public class CustomerBasedCartTabOrderFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_customer_based_cart_tab_order, container, false);
 
-        customerCartProductRecyclerView = rootView.findViewById(R.id.rv_customerCartProduct);
-        customerCartProductRecyclerView.setHasFixedSize(true);
-        customerCartProductRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        //customerCartProductRecyclerView = rootView.findViewById(R.id.rv_customerCartStore);
+        customerCartStoreRecyclerView = rootView.findViewById(R.id.rv_customerCartStore);
 
-        customerCartProductAdapter = new CustomerCartProductAdapter(customerCartProductModelList, getActivity());
-        customerCartProductRecyclerView.setAdapter(customerCartProductAdapter);
+        //customerCartProductRecyclerView.setHasFixedSize(true);
+        customerCartStoreRecyclerView.setHasFixedSize(true);
+
+        //customerCartProductRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        customerCartStoreRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+
+        //customerCartProductAdapter = new CustomerCartProductAdapter(customerCartProductModelList, getActivity());
+        customerCartStoreAdapter = new CustomerCartStoreAdapter(customerCartStoreModelList, customerCartProductModelList, getActivity());
+
+        //customerCartProductRecyclerView.setAdapter(customerCartProductAdapter);
+        customerCartStoreRecyclerView.setAdapter(customerCartStoreAdapter);
 
 
         ItemTouchHelper.SimpleCallback simpleCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT) {
@@ -60,12 +76,12 @@ public class CustomerBasedCartTabOrderFragment extends Fragment {
 
             @Override
             public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
-                customerCartProductModelList.remove(viewHolder.getAdapterPosition());
-                customerCartProductAdapter.notifyDataSetChanged();
+                customerCartStoreModelList.remove(viewHolder.getAdapterPosition());
+                customerCartStoreAdapter.notifyDataSetChanged();
             }
         };
 
-        new ItemTouchHelper(simpleCallback).attachToRecyclerView(customerCartProductRecyclerView);
+        new ItemTouchHelper(simpleCallback).attachToRecyclerView(customerCartStoreRecyclerView);
 
         DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
         databaseReference.addValueEventListener(new ValueEventListener() {
@@ -74,6 +90,27 @@ public class CustomerBasedCartTabOrderFragment extends Fragment {
                 SharedPreferences sharedPreferences = getContext().getSharedPreferences("productsInCart", getContext().MODE_PRIVATE);
                 Map<String, String> allValues = (Map<String, String>) sharedPreferences.getAll();
 
+                List<String> storeIdLists = new ArrayList<>();
+
+                for (Map.Entry<String, ?> entry : allValues.entrySet()) {
+                    String storeId = entry.getKey();
+
+                    storeIdLists.add(storeId);
+                }
+
+                for (DataSnapshot snapshot : dataSnapshot.child("Users").getChildren()) {
+                    Users user = snapshot.getValue(Users.class);
+
+                    if (storeIdLists.contains(user.getMobileNumber())) {
+                        CustomerCartStoreModel customerCartStoreModel = new CustomerCartStoreModel(
+                                user.getMobileNumber(),
+                                user.getStoreName(),
+                                58.0,
+                                user.getStoreImage()
+                        );
+                        customerCartStoreModelList.add(customerCartStoreModel);
+                    }
+                }
 
                 for (Map.Entry<String, String> entry : allValues.entrySet()) {
                     String ownerId = entry.getKey();
@@ -133,7 +170,7 @@ public class CustomerBasedCartTabOrderFragment extends Fragment {
                     }
                 }
 
-                customerCartProductAdapter.notifyDataSetChanged();
+                customerCartStoreAdapter.notifyDataSetChanged();
                 // Use the customerCartProductModelList as needed
             }
 
