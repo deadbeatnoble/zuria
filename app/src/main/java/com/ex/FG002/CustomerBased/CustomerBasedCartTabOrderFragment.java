@@ -64,7 +64,7 @@ public class CustomerBasedCartTabOrderFragment extends Fragment {
         //customerCartProductAdapter = new CustomerCartProductAdapter(customerCartProductModelList, getActivity());
         customerCartStoreAdapter = new CustomerCartStoreAdapter(customerCartStoreModelList, customerCartProductModelList, getActivity());
 
-        //customerCartProductRecyclerView.setAdapter(customerCartProductAdapter);
+        //customerCartProductRecyclerView.setAdapter(customerCartProductAdapter) ;
         customerCartStoreRecyclerView.setAdapter(customerCartStoreAdapter);
 
 
